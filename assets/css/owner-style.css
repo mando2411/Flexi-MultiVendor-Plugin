@@ -751,7 +751,6 @@ td[data-label="Price"] .inline-edit:focus{
     padding: 25px;
 }
 
-#styliiiishImageModal,
 @keyframes flashBg {
     0% { background:#e1f4ff; }
     100% { background:#fff; }
