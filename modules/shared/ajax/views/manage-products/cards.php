@@ -10,6 +10,11 @@ $is_user = $data['is_user'] ?? false;
 
 ?>
 
+<?php
+// Load this view's CSS when the view is rendered (AJAX or include).
+echo '<link rel="stylesheet" href="' . esc_url( plugins_url( 'assets/cards.css', __FILE__ ) ) . '" />';
+?>
+
 <div class="sty-cards-grid">
 
 <?php if(!empty($products)): ?>
