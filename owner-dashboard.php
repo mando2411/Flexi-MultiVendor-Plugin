@@ -1,0 +1,766 @@
+<?php
+/*
+Plugin Name: WebsiteFlexi Owner Dashboard & Marketplace
+Description: WebsiteFlexi Dashboard & Marketplace — Owner control, managers, dashboard access and customer dress marketplace.
+Version: 3.4
+Author: WebsiteFlexi
+*/
+
+
+
+
+
+
+
+
+
+
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Constants
+ */
+define('WF_OWNER_DASHBOARD_PATH', plugin_dir_path(__FILE__));
+define('WF_OWNER_DASHBOARD_URL', plugin_dir_url(__FILE__));
+
+
+/**
+ * Load includes
+ */
+require_once WF_OWNER_DASHBOARD_PATH . 'includes/helpers.php';
+require_once WF_OWNER_DASHBOARD_PATH . 'includes/settings-handler.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/vendor-workflow.php';
+require_once WF_OWNER_DASHBOARD_PATH . 'includes/vendor-profile-editor.php';
+
+
+
+/**
+ * Admin Settings
+ */
+if (is_admin()) {
+    require_once WF_OWNER_DASHBOARD_PATH . 'admin/system-settings.php';
+}
+
+/**
+ * Frontend functional files
+ */
+require_once WF_OWNER_DASHBOARD_PATH . 'vendor-products.php';
+require_once WF_OWNER_DASHBOARD_PATH . 'orders.php';
+require_once WF_OWNER_DASHBOARD_PATH . 'stats.php';
+require_once WF_OWNER_DASHBOARD_PATH . 'email.php';
+require_once WF_OWNER_DASHBOARD_PATH . 'functions.php';
+require_once WF_OWNER_DASHBOARD_PATH . 'tracking-order.php';
+require_once WF_OWNER_DASHBOARD_PATH . 'vendor-orders/vendor-orders.php';
+
+
+
+
+include WF_OWNER_DASHBOARD_PATH . 'modules/shared/ajax/manage-products-ajax.php';
+include WF_OWNER_DASHBOARD_PATH . 'modules/shared/helpers-images.php';
+include WF_OWNER_DASHBOARD_PATH . 'modules/shared/helpers-attributes.php';
+include WF_OWNER_DASHBOARD_PATH . 'modules/manage-products/manage-products.php';
+
+
+
+
+
+
+add_action('init', function () {
+
+    if ( ! is_user_logged_in() ) return;
+
+    require_once plugin_dir_path(__FILE__) . 'vendor-orders/vendor-orders.php';
+
+});
+add_action('wp_enqueue_scripts', function () {
+
+    if ( ! is_user_logged_in() ) return;
+
+    if ( ! is_page() ) return; // أو شرط الشورت كود
+
+    wp_enqueue_style(
+        'wf-vendor-orders',
+        plugin_dir_url(__FILE__) . 'vendor-orders/vendor-orders.css',
+        [],
+        '1.1'
+    );
+
+    wp_enqueue_script(
+        'wf-vendor-orders',
+        plugin_dir_url(__FILE__) . 'vendor-orders/vendor-orders.js',
+        ['jquery'],
+        '1.1',
+        true
+    );
+
+    wp_localize_script('wf-vendor-orders', 'wfVendorOrders', [
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce'    => wp_create_nonce('wf_vendor_orders'),
+        'is_rtl'   => is_rtl(),
+    ]);
+
+});
+
+
+
+
+
+
+
+
+
+add_action( 'admin_enqueue_scripts', 'websiteflexi_load_admin_assets' );
+
+function websiteflexi_load_admin_assets( $hook ) {
+
+    // شغّل فقط لو الصفحة فيها اسم الإعدادات
+    if ( strpos( $hook, 'websiteflexi-system-settings' ) === false ) {
+        return;
+    }
+
+    $base = WF_OWNER_DASHBOARD_URL;
+
+    // CSS
+    wp_enqueue_style(
+        'wf-welcome-ui',
+        $base . 'admin/assets/admin.css',
+        [],
+        time()
+    );
+
+    // JS
+    wp_enqueue_script(
+        'wf-welcome-ui',
+        $base . 'admin/assets/admin.js',
+        ['jquery'],
+        time(),
+        true
+    );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// replace init with __FILE__ finall relase
+//register_activation_hook(__FILE__,'wf_install_support_system');
+add_action('init','wf_install_support_system');
+
+function wf_install_support_system(){
+
+  // شغّله مرة واحدة فقط
+  if(get_option('wf_support_installed')){
+    return;
+  }
+
+  global $wpdb;
+
+  require_once ABSPATH.'wp-admin/includes/upgrade.php';
+
+  $charset = $wpdb->get_charset_collate();
+
+
+  /* ===========================
+     CHAT TABLE
+  =========================== */
+
+  $chat = $wpdb->prefix.'wf_support_chat';
+
+  $chat_sql = "CREATE TABLE $chat (
+
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    order_id BIGINT UNSIGNED NOT NULL,
+
+    sender_id BIGINT UNSIGNED NOT NULL,
+
+    sender_role VARCHAR(30),
+
+    message LONGTEXT NOT NULL,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    seen TINYINT(1) DEFAULT 0,
+
+    KEY order_id (order_id),
+    KEY sender_id (sender_id),
+    KEY seen (seen)
+
+  ) $charset;";
+
+  dbDelta($chat_sql);
+
+
+
+  /* ===========================
+     ASSIGNMENTS TABLE
+  =========================== */
+
+  $assign = $wpdb->prefix.'wf_support_assignments';
+
+  $assign_sql = "CREATE TABLE $assign (
+
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    order_id BIGINT UNSIGNED NOT NULL,
+
+    agent_id BIGINT UNSIGNED NOT NULL,
+
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY order_unique (order_id),
+    KEY agent_id (agent_id)
+
+  ) $charset;";
+
+  dbDelta($assign_sql);
+
+
+  // علّم إنه اتثبت
+  update_option('wf_support_installed',1);
+}
+
+
+
+
+
+/* ===========================================
+   Load Assets ONLY on owner-dashboard page
+=========================================== */
+add_action('wp_enqueue_scripts', function () {
+
+    if (!is_page('owner-dashboard')) return;
+    
+    
+
+
+    // CSS
+    wp_enqueue_style('sty-owner-css', WF_OWNER_DASHBOARD_URL . 'assets/css/owner-style.css', [], time());
+    wp_enqueue_style('sty-owner-mobile-css', WF_OWNER_DASHBOARD_URL . 'assets/css/mobile.css', ['sty-owner-css'], time());
+
+    // Select2
+    wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
+    wp_enqueue_script('select2-js', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', ['jquery']);
+
+    // SweetAlert
+    wp_enqueue_script('sweetalert2', 'https://cdn.jsdelivr.net/npm/sweetalert2@11', ['jquery']);
+
+    // Owner Dashboard JS
+    wp_enqueue_script('sty-owner-js', WF_OWNER_DASHBOARD_URL . 'assets/js/owner-dashboard-theme.js',
+        ['jquery', 'sweetalert2', 'select2-js'], time(), true);
+        
+        
+
+    wp_enqueue_media();
+
+    wp_localize_script('sty-owner-js', 'ajax_object', [
+        'ajax_url'    => admin_url('admin-ajax.php'),
+        'nonce'       => wp_create_nonce('styliiiish_nonce'),
+        'mode'        => 'owner',
+        'old_add_url' => admin_url('admin-post.php?action=styliiiish_new_product'),
+        'is_manager'  => current_user_can('manage_woocommerce'),
+    ]);
+});
+
+/**
+ * Theme CSS (Shopire + Ekart)
+ */
+add_action('wp_enqueue_scripts', function () {
+    wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
+});
+
+/**
+ * Add Settings link near Deactivate
+ */
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
+
+    $settings_link = '<a href="' . admin_url('plugins.php?page=websiteflexi-system-settings') . '">Settings</a>';
+    array_unshift($links, $settings_link);
+    return $links;
+});
+
+
+
+add_action('template_redirect', function () {
+
+    if ( get_query_var('vendor-orders', false) === false ) {
+        return;
+    }
+
+    if ( ! is_user_logged_in() ) {
+        wp_die('Unauthorized');
+    }
+
+    // تحميل CSS & JS
+    wf_vendor_orders_assets();
+
+    // تحميل HTML
+    add_action('wp_footer', 'wf_vendor_orders_render_modals');
+});
+
+
+add_action('init', function () {
+    add_rewrite_endpoint('vendor-orders', EP_ROOT | EP_PAGES);
+});
+
+
+
+
+
+
+
+
+
+
+add_action( 'init', function () {
+    load_plugin_textdomain(
+        'website-flexi',
+        false,
+        dirname( plugin_basename( __FILE__ ) ) . '/languages'
+    );
+});
+add_action( 'init', function () {
+
+    if ( function_exists( 'pll_register_string' ) ) {
+
+        pll_register_string(
+            'wf_register_vendor',
+            'Register as Vendor',
+            'WebsiteFlexi'
+        );
+
+        pll_register_string(
+            'wf_application_under_review',
+            'Application Under Review',
+            'WebsiteFlexi'
+        );
+
+        pll_register_string(
+            'wf_store_suspended',
+            'Store Suspended',
+            'WebsiteFlexi'
+        );
+
+        pll_register_string(
+            'wf_my_products',
+            'My Products',
+            'WebsiteFlexi'
+        );
+
+        pll_register_string(
+            'wf_wallet',
+            'Wallet',
+            'WebsiteFlexi'
+        );
+
+        pll_register_string(
+            'wf_withdraw',
+            'Withdraw Earnings',
+            'WebsiteFlexi'
+        );
+    }
+
+});
+
+
+            /* Vendor rewrite */
+            add_action('init', function () {
+                add_rewrite_rule('^vendor/([^/]+)/?$', 'index.php?vendor_name=$matches[1]', 'top');
+                add_rewrite_tag('%vendor_name%', '([^&]+)');
+            });
+            
+
+            
+            /* WooCommerce context */
+            add_filter('woocommerce_is_shop', function ($is_shop) {
+                return get_query_var('vendor_name') ? true : $is_shop;
+            });
+            
+            /* Force NOT blog (WoodMart fix) */
+            add_action('wp', function () {
+                if (get_query_var('vendor_name')) {
+                    add_filter('woodmart_is_blog', '__return_false');
+                }
+            });
+            
+            /* Title */
+            add_filter('woodmart_page_title', function ($title) {
+                if ($v = get_query_var('vendor_name')) {
+                    $user = get_user_by('login', $v);
+                    return $user ? esc_html($user->display_name) : __('Vendor','website-flexi');
+                }
+                return $title;
+            });
+            
+            /* Breadcrumb */
+            add_filter('woodmart_breadcrumbs', function ($items) {
+                if (!get_query_var('vendor_name')) return $items;
+            
+                $vendor = get_user_by('login', get_query_var('vendor_name'));
+            
+                return [
+                    ['title'=>__('Home','website-flexi'),'url'=>home_url('/')],
+                    ['title'=>__('Vendors','website-flexi'),'url'=>home_url('/vendors')],
+                    ['title'=>$vendor ? $vendor->display_name : __('Vendor','website-flexi'),'url'=>''],
+                ];
+            });
+            
+            /* Body class */
+            add_filter('body_class', function ($classes) {
+                if (get_query_var('vendor_name')) {
+                    $classes[] = 'woocommerce';
+                    $classes[] = 'woocommerce-page';
+                    $classes[] = 'vendor-page';
+                }
+                return $classes;
+            });
+            
+            
+            add_action('pre_get_posts', function ($q) {
+
+                if (
+                    ! is_admin() &&
+                    $q->is_main_query() &&
+                    get_query_var('vendor_name')
+                ) {
+            
+                    // نجيب منتجات فقط
+                    $q->set('post_type', 'product');
+                    $q->set('post_status', 'publish');
+            
+                    // ❌ مهم جدًا: مانقلبهاش Shop رسمي
+                    $q->is_home    = false;
+                    $q->is_page    = false;
+                    $q->is_archive = false;
+            
+                    // نخليها Custom Query
+                    $q->is_singular = false;
+                }
+            });
+            
+            
+            
+            /****************************************** ⚠️ ملاحظات مهمة جدًا (مستوى محترف)
+🔴 1) SEO
+
+أنت محتاج كمان:
+
+meta description
+
+canonical
+
+schema Vendor / Store          *///////////////////
+
+add_filter('pre_handle_404', function ($preempt, $wp_query) {
+
+    if (get_query_var('vendor_name')) {
+        $wp_query->is_404 = false;
+        return true; // نوقف WordPress من تفعيل 404
+    }
+
+    return $preempt;
+}, 10, 2);
+add_filter('document_title_parts', function ($title) {
+
+    if (get_query_var('vendor_name')) {
+
+        $vendor = get_user_by('login', get_query_var('vendor_name'));
+        if (!$vendor) return $title;
+
+        $site_name = get_bloginfo('name');
+
+        if (function_exists('pll_current_language') && pll_current_language() === 'en') {
+
+            // English: Mando Store - Site Name
+            $title['title'] = $vendor->display_name . ' Store';
+
+        } else {
+
+            // Arabic: متجر Mando - Site Name
+            $title['title'] = 'متجر ' . $vendor->display_name;
+
+        }
+
+        $title['site'] = $site_name;
+    }
+
+    return $title;
+});
+
+
+
+
+
+            
+            
+            /* Template */
+
+            add_filter('template_include', function ($template) {
+                if (get_query_var('vendor_name')) {
+                    return WF_OWNER_DASHBOARD_PATH . 'templates/vendor-page.php';
+                }
+                return $template;
+            });
+
+            add_filter('woodmart_is_blog', function ($is_blog) {
+                if (get_query_var('vendor_name')) {
+                    return false;
+                }
+                return $is_blog;
+            });
+            
+            add_filter('woodmart_is_shop', function ($is_shop) {
+                if (get_query_var('vendor_name')) {
+                    return true;
+                }
+                return $is_shop;
+            });
+
+/* ===========================================
+   Shortcode: Owner Dashboard
+=========================================== */
+
+
+
+/******************************* 
+ 
+           🧨 الخلاصة النهائية
+الكود ده:
+
+✔ لوحة تحكم Owner / Manager
+✔ مبنية على Shortcode
+✔ UI واحد وصلاحيات مختلفة
+✔ بدون Reload
+✔ تعتمد على فانكشنز مشتركة
+
+❗ مشاكل حرجة
+المشكلة	الخطورة
+AJAX بدون nonce	🔴 عالية
+AJAX بدون صلاحيات	🔴 عالية
+Inline JS	🟡 متوسطة
+Logic في الشورت كود	🟡 قابل للتحسين
+🔧 لو حابب
+
+أقدر في الخطوة الجاية:
+
+🔐 أقفل ثغرة الـ AJAX
+
+🧼 أعيد هيكلة الـ roles
+
+🧩 أفصل Owner / User clean
+
+🚀 أحسن الأداء                 
+**************************************/
+function styliiiish_owner_dashboard_shortcode(){
+    if (!is_user_logged_in()) {
+        return '<p>Please log in to access this page.</p>';
+    }
+
+    $user = wp_get_current_user();
+    $user_id = $user->ID;
+
+    $allowed_dashboard = wf_od_get_dashboard_ids();
+    $is_admin = in_array('administrator', (array) $user->roles, true);
+    $is_manager = (in_array($user_id, wf_od_get_manager_ids()) || $is_admin);
+
+    if (!$is_manager && !in_array($user_id, $allowed_dashboard)) {
+        return '<p>You do not have permission to access this page.</p>';
+    }
+
+    ob_start();
+    ?>
+
+    <div class="owner-dashboard-container" id="sty-page-wrapper">
+
+        <h2 style="margin-bottom:20px;">
+            🛍 Styliiiish Owner Dashboard
+        </h2>
+
+        <!-- CARDS -->
+        <div class="owner-card" onclick="showSection('products')">
+            <h3>🛍 Manage Products <span>→</span></h3>
+        </div>
+
+        <?php if ($is_manager): ?>
+            <div class="owner-card" onclick="showSection('vendor_products')">
+                <h3>👗 Customer Dresses Added <span>→</span></h3>
+            </div>
+
+            <div class="owner-card" onclick="showSection('orders')">
+                <h3>📦 Orders <span>→</span></h3>
+            </div>
+
+            <div class="owner-card" onclick="showSection('stats')">
+                <h3>📊 Statistics <span>→</span></h3>
+            </div>
+
+            <div class="owner-card" onclick="showSection('email')">
+                <h3>✉️ Send Email <span>→</span></h3>
+            </div>
+        <?php endif; ?>
+
+        <!-- SECTIONS -->
+        <div id="section-products" class="owner-section" style="display:none;">
+            <h3>🛍 Manage Products</h3>
+            <?php styliiiish_render_manage_products($is_manager); ?>
+        </div>
+
+        <?php if ($is_manager): ?>
+            <div id="section-vendor_products" class="owner-section" style="display:none;">
+                <h3>👗 Customer Dresses Added</h3>
+                <?php styliiiish_render_vendor_products(); ?>
+            </div>
+
+            <div id="section-orders" class="owner-section" style="display:none;">
+                <h3>📦 Orders</h3>
+                <?php styliiiish_render_orders(); ?>
+            </div>
+
+            <div id="section-stats" class="owner-section" style="display:none;">
+                <h3>📊 Statistics</h3>
+                <?php styliiiish_render_stats(); ?>
+            </div>
+
+            <div id="section-email" class="owner-section" style="display:none;">
+                <h3>✉️ Send Email</h3>
+                <?php styliiiish_render_email_sender(); ?>
+            </div>
+        <?php endif; ?>
+
+    </div>
+
+    <script>
+        function showSection(section) {
+            document.querySelectorAll('.owner-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById("section-" + section).style.display = 'block';
+            window.scrollTo({top: 300, behavior: 'smooth'});
+        }
+    </script>
+
+    <?php
+    return ob_get_clean();
+        }
+        add_shortcode('owner_dashboard', 'styliiiish_owner_dashboard_shortcode');
+        
+
+        
+        add_action('wp_ajax_styliiiish_inline_update_status', function () {
+        
+            $product_id = intval($_POST['product_id']);
+            $status     = sanitize_text_field($_POST['status']);
+        
+            wp_update_post([
+                'ID' => $product_id,
+                'post_status' => $status
+            ]);
+        
+            wp_die("OK");
+        });
+        
+        
+        
+        
+        /**
+         * AJAX Inline Editing (Price / Stock)
+         */
+        add_action('wp_ajax_styliiiish_inline_update', function () {
+        
+            $product_id = intval($_POST['product_id']);
+            $field      = sanitize_text_field($_POST['field']);
+            $value      = sanitize_text_field($_POST['value']);
+        
+            if ($field === 'price') {
+                update_post_meta($product_id, '_regular_price', $value);
+                update_post_meta($product_id, '_price', $value);
+            }
+        
+            if ($field === 'stock') {
+                update_post_meta($product_id, '_stock', $value);
+                update_post_meta($product_id, '_manage_stock', 'yes');
+            }
+        
+            wp_die("OK");
+        });
+
+
+
+
+
+register_activation_hook(__FILE__, 'wf_create_reports_table');
+
+function wf_create_reports_table() {
+    global $wpdb;
+
+    $table = $wpdb->prefix . 'wf_reports';
+    $charset = $wpdb->get_charset_collate();
+
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+    $sql = "CREATE TABLE {$table} (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        report_type VARCHAR(20) NOT NULL,
+        object_id BIGINT UNSIGNED NOT NULL,
+        reported_by BIGINT UNSIGNED NOT NULL,
+        reason VARCHAR(20) NOT NULL,
+        comment TEXT NULL,
+        status VARCHAR(20) DEFAULT 'pending',
+        created_at DATETIME NOT NULL,
+        PRIMARY KEY (id),
+        KEY report_type (report_type),
+        KEY object_id (object_id),
+        KEY reported_by (reported_by)
+    ) {$charset};";
+
+    dbDelta($sql);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
