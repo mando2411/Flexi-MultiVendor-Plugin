@@ -585,11 +585,14 @@ td[data-label="Price"] .inline-edit:focus{
 }
 
 .inline-description:not(:focus){
-  -webkit-line-clamp:3;
-  display:-webkit-box;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+
+  line-clamp: 3;              /* Standard */
+  overflow: hidden;
 }
+
 
 /* تصغير حجم الـ checkbox نفسه */
 .styliiiish-row-check {
