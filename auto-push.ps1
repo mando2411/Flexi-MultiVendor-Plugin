@@ -1,4 +1,6 @@
-cd "D:\أسواق تاج\Flexi MultiVendor V1.0\Flexi-MultiVendor-Plugin"
+# Auto Push Script for Flexi Plugin
+
+git status
 
 git add .
 
