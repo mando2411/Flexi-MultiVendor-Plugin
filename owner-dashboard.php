@@ -1089,6 +1089,8 @@ function taajvendor_verify_license(){
 }
 
 
+delete_transient('tv_license_status');
+delete_transient('tv_license_checked');
 
 
 add_action('admin_init','taajvendor_auto_check_license');
