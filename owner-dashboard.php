@@ -2,7 +2,7 @@
 /*
 Plugin Name: WebsiteFlexi Owner Dashboard & Marketplace
 Description: WebsiteFlexi Dashboard & Marketplace — Owner control, managers, dashboard access and customer dress marketplace.
-Version: 3.4
+Version: 1.2.0
 Author: WebsiteFlexi
 */
 
