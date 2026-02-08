@@ -136,9 +136,12 @@
 =========================== */
 
 .builder-form{
-    overflow-y:auto;
-    max-height:90vh;
-    padding-right:10px;
+   overflow-y:auto;
+   max-height:90vh;
+   padding-right:10px;
+
+   /* Reserve space for the action buttons (prevents injected attrs from pushing buttons out) */
+   padding-bottom: 120px; /* minimal reserve; matches .builder-actions height */
 }
 
 
@@ -192,7 +195,8 @@
 /* Buttons */
 
 .builder-actions{
-    position: sticky;
+   z-index: 9999;
+   position: sticky;
    bottom:0;
    background:#fff;
    padding:12px 0;
