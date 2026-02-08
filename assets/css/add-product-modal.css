@@ -201,8 +201,8 @@
 /* Buttons */
 
 .builder-actions{
-   position: sticky;
-   bottom: -20 !important;
+   position: relative;
+   bottom: 0;
 
    background: #fff;
    border-top: 1px solid #eee;
