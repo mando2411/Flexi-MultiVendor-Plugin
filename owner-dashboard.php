@@ -52,7 +52,11 @@ function taajvendor_check_update($transient){
       return $transient;
    }
 
-   if (version_compare(TAAJVENDOR_VERSION, $data->version, '<')) {
+   if (
+   taajvendor_check_license() &&
+   version_compare(TAAJVENDOR_VERSION,$data->version,'<')
+){
+
 
       $plugin = plugin_basename(__FILE__);
 
@@ -66,6 +70,21 @@ function taajvendor_check_update($transient){
    }
 
    return $transient;
+}
+add_action('admin_init', 'taajvendor_show_license_notice');
+
+function taajvendor_show_license_notice(){
+
+   if (!get_transient('tv_license_ok')) {
+
+      add_action('admin_notices', function(){
+
+         echo '<div class="notice notice-error">
+            <p><strong>TaajVendor:</strong> License inactive. Please activate your license.</p>
+         </div>';
+
+      });
+   }
 }
 
 
@@ -853,9 +872,80 @@ function wf_create_reports_table() {
 
 
 
+add_action('admin_menu','taajvendor_license_page');
 
+function taajvendor_license_page(){
 
+   add_submenu_page(
+      'options-general.php',
+      'TaajVendor License',
+      'TaajVendor License',
+      'manage_options',
+      'taajvendor-license',
+      'taajvendor_license_ui'
+   );
+}
 
+function taajvendor_license_ui(){
+
+   if(isset($_POST['tv_save_license'])){
+      update_option('tv_license_key', sanitize_text_field($_POST['license']));
+   }
+
+   $key = get_option('tv_license_key');
+   ?>
+
+   <div class="wrap">
+   <h2>TaajVendor License</h2>
+
+   <form method="post">
+      <input type="text" name="license" value="<?php echo esc_attr($key);?>" style="width:400px">
+
+      <p>
+      <button class="button button-primary" name="tv_save_license">
+         Activate License
+      </button>
+      </p>
+   </form>
+   </div>
+
+<?php }
+
+function taajvendor_check_license(){
+
+   $key = get_option('tv_license_key');
+
+   if(!$key) return false;
+
+   $res = wp_remote_post(
+      'https://taajvendor.com/api/license-api.php',
+      [
+         'body'=>[
+            'license'=>$key,
+            'domain'=>home_url()
+         ]
+      ]
+   );
+
+   if(is_wp_error($res)) return false;
+
+   $data = json_decode(wp_remote_retrieve_body($res),true);
+
+   return ($data['status'] === 'valid');
+}
+
+add_action('admin_init','taajvendor_validate_license');
+
+function taajvendor_validate_license(){
+
+   if(get_transient('tv_license_ok')) return;
+
+   if(taajvendor_check_license()){
+      set_transient('tv_license_ok',1, DAY_IN_SECONDS);
+   }else{
+      delete_transient('tv_license_ok');
+   }
+}
 
 
 
