@@ -162,9 +162,27 @@ $(document).on('submit','#addProductForm',function(e){
      if(res.success){
 
         Swal.fire('Saved','Done','success');
-          // Close the Add Product modal after a successful save
-          // (preserves the Swal toast and other UI behavior)
-          closeBuilder();
+
+        // If the manage-products list exists, reload it and close the modal
+        // only after the list's AJAX completes so the UI reflects the change.
+        if (typeof loadManageProductsPage === 'function' && $('#styliiiish-manage-products-content').length) {
+
+           $(document).one('ajaxStop', function(){
+              closeBuilder();
+           });
+
+           try{
+              // preserve current page if available
+              var page = (window.currentFilters && window.currentFilters.page) ? window.currentFilters.page : 1;
+              loadManageProductsPage(page);
+           }catch(e){
+              loadManageProductsPage(1);
+           }
+
+        } else {
+           // fallback: close immediately
+           closeBuilder();
+        }
 
      }else{
 
