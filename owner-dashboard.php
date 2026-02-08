@@ -102,36 +102,36 @@ function taajvendor_plugin_info($res, $action, $args){
       return $res;
    }
 
-   if ($args->slug !== 'taajvendor') {
+   if (empty($args->slug) || $args->slug !== 'taajvendor') {
       return $res;
    }
 
    $remote = wp_remote_get(
       'https://taajvendor.com/api/plugin-update.php',
-      ['timeout'=>15]
+      ['timeout' => 15]
    );
 
    if (is_wp_error($remote)) {
       return $res;
    }
 
-   $data = json_decode(wp_remote_retrieve_body($remote));
+   $data = json_decode(wp_remote_retrieve_body($remote), true);
 
-   if (!$data) {
+   if (!$data || empty($data['version'])) {
       return $res;
    }
 
-   return (object)[
-      'name'          => $data->name,
-      'slug'          => $data->slug,
-      'version'       => $data->version,
+   return [
+      'name'          => $data['name'],
+      'slug'          => $data['slug'],
+      'version'       => $data['version'],
       'author'        => '<a href="https://taajvendor.com">TaajVendor</a>',
       'homepage'      => 'https://taajvendor.com',
-      'download_link' => $data->download_url,
-      'requires'      => $data->requires,
-      'tested'        => $data->tested,
-      'requires_php'  => $data->requires_php,
-      'sections'      => $data->sections,
+      'download_link' => $data['download_url'],
+      'requires'      => $data['requires'],
+      'tested'        => $data['tested'],
+      'requires_php'  => $data['requires_php'],
+      'sections'      => $data['sections'],
    ];
 }
 
