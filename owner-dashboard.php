@@ -43,6 +43,10 @@ if (!defined('ABSPATH')) {
  */
 define('WF_OWNER_DASHBOARD_PATH', plugin_dir_path(__FILE__));
 define('WF_OWNER_DASHBOARD_URL', plugin_dir_url(__FILE__));
+
+
+
+
 define('TAAJVENDOR_VERSION', '1.3.0'); // غيرها مع كل إصدار
 
 add_filter('site_transient_update_plugins', 'taajvendor_check_update');
@@ -121,19 +125,22 @@ function taajvendor_plugin_info($res, $action, $args){
       return $res;
    }
 
-   return [
-      'name'          => $data['name'],
-      'slug'          => $data['slug'],
-      'version'       => $data['version'],
-      'author'        => '<a href="https://taajvendor.com">TaajVendor</a>',
-      'homepage'      => 'https://taajvendor.com',
-      'download_link' => $data['download_url'],
-      'requires'      => $data['requires'],
-      'tested'        => $data['tested'],
-      'requires_php'  => $data['requires_php'],
-      'sections'      => $data['sections'],
-   ];
+   $info = new stdClass();
+
+   $info->name          = $data['name'];
+   $info->slug          = $data['slug'];
+   $info->version       = $data['version'];
+   $info->author        = '<a href="https://taajvendor.com">TaajVendor</a>';
+   $info->homepage      = 'https://taajvendor.com';
+   $info->download_link = $data['download_url'];
+   $info->requires      = $data['requires'];
+   $info->tested        = $data['tested'];
+   $info->requires_php  = $data['requires_php'];
+   $info->sections      = $data['sections'];
+
+   return $info;
 }
+
 
 
 
