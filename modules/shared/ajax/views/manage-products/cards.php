@@ -29,12 +29,12 @@ $status = $p->get_status();
 
 // Map internal WP statuses to user-friendly labels (publish -> Active)
 $status_labels = [
-    'publish' => 'Active',
-    'draft'   => 'Draft',
-    'pending' => 'Pending',
-    'private' => 'Private',
-    'future'  => 'Scheduled',
-    'trash'   => 'Trashed'
+    'publish' => __('Active', 'website-flexi'),
+    'draft'   => __('Draft', 'website-flexi'),
+    'pending' => __('Pending', 'website-flexi'),
+    'private' => __('Private', 'website-flexi'),
+    'future'  => __('Scheduled', 'website-flexi'),
+    'trash'   => __('Trashed', 'website-flexi')
 ];
 
 $status_label = isset($status_labels[$status]) ? $status_labels[$status] : ucfirst($status);
