@@ -1852,3 +1852,36 @@ if ( ! function_exists('websiteflexi_get_i18n_option') ) {
         return $default;
     }
 }
+
+add_filter('site_transient_update_plugins','taajvendor_check_update');
+
+function taajvendor_check_update($transient){
+
+   if (empty($transient->checked)) return $transient;
+
+   $remote = wp_remote_get(
+      'https://taajvendor.com/api/plugin-update.php'
+   );
+
+   if (is_wp_error($remote)) return $transient;
+
+   $data = json_decode(wp_remote_retrieve_body($remote));
+
+   if (version_compare(
+      '1.0.0',
+      $data->version,
+      '<'
+   )) {
+
+      $plugin = plugin_basename(__FILE__);
+
+      $transient->response[$plugin] = (object)[
+         'slug' => 'taajvendor',
+         'new_version' => $data->version,
+         'url' => 'https://taajvendor.com',
+         'package' => $data->download_url
+      ];
+   }
+
+   return $transient;
+}
