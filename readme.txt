@@ -9,5 +9,5 @@ License: Commercial
 Professional multi-vendor marketplace.
 
 == Assets ==
-
+icon-128x128.png
 icon-256x256.png
