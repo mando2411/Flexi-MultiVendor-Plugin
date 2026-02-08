@@ -13,50 +13,13 @@ Tested up to: 6.4
 Requires PHP: 7.4
 License: Commercial
 */
-
-
-
-
-
-
-
-
-
-
-
-
 if (!defined('ABSPATH')) {
     exit;
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * Constants
- */
-define('WF_OWNER_DASHBOARD_PATH', plugin_dir_path(__FILE__));
-define('WF_OWNER_DASHBOARD_URL', plugin_dir_url(__FILE__));
-
-
-
-
-define('TAAJVENDOR_VERSION', '1.2.0'); // غيرها مع كل إصدار
+define('TAAJVENDOR_VERSION', '1.3.0'); // غيرها مع كل إصدار
 
 add_filter('site_transient_update_plugins', 'taajvendor_check_update');
 add_filter('plugins_api', 'taajvendor_plugin_info', 20, 3);
@@ -149,6 +112,31 @@ function taajvendor_plugin_info($res, $action, $args){
 
    return $info;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Constants
+ */
+define('WF_OWNER_DASHBOARD_PATH', plugin_dir_path(__FILE__));
+define('WF_OWNER_DASHBOARD_URL', plugin_dir_url(__FILE__));
+
+
+
 
 
 
