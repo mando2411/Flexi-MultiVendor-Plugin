@@ -201,7 +201,7 @@
 /* Buttons */
 
 .builder-actions{
-   position: absolute;
+   position: relative;
    bottom: 0;
 
    background: #fff;
