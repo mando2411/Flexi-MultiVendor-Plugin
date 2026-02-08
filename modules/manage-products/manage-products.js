@@ -29,12 +29,26 @@ window.ManageProductsModule = {
             self.loadPage(page);
         });
 
+        // Sort change
+        $(document).on('change', '#styliiiish-sort', function(){
+            self.filters.sort = $(this).val();
+            self.loadPage(1);
+        });
+
+        // Per-row (columns) change
+        $(document).on('change', '#styliiiish-per-row', function(){
+            self.filters.per_row = parseInt($(this).val()) || 3;
+            self.loadPage(1);
+        });
+
     },
 
     filters: {
         search: '',
         cat: '',
         status: '',
+        sort: 'date_desc',
+        per_row: 3,
         page: 1
     },
 
@@ -49,6 +63,11 @@ window.ManageProductsModule = {
             ...self.filters
         }, function(response){
             self.container.html(response);
+            // Apply per_row as a CSS variable so cards CSS can adjust
+            try{
+                var cols = parseInt(self.filters.per_row) || 3;
+                self.container.find('.sty-cards-grid').css('--cards-cols', cols);
+            }catch(e){}
         });
     },
 

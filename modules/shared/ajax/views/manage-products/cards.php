@@ -43,9 +43,12 @@ $terms = wp_get_post_terms($id,'product_cat',['fields'=>'names']);
 
 $is_deactivated =
     get_post_meta($id,'_styliiiish_manual_deactivate',true)==='yes';
+
+// created timestamp for client-side sorting
+$created_ts = get_post_time('U', true, $id);
 ?>
 
-<div class="sty-card <?= $is_deactivated?'is-deactivated':'' ?>" data-id="<?= esc_attr($id) ?>">
+<div class="sty-card <?= $is_deactivated?'is-deactivated':'' ?>" data-id="<?= esc_attr($id) ?>" data-created="<?= esc_attr($created_ts) ?>" data-price="<?= esc_attr($price) ?>">
 
     <!-- Image -->
    <div class="card-thumb">

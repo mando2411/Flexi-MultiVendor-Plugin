@@ -17,7 +17,7 @@
 
 
 // متغيرات عامة نستخدمها فى كل الكود
-window.currentFilters   = { search:'', cat:'', status:'', page:1 };
+window.currentFilters   = { search:'', cat:'', status:'', sort:'date_desc', per_row:3, page:1 };
 window.currentProduct   = 0;
 window.currentImageProd = 0;
 window.searchTimer      = null;
@@ -206,6 +206,8 @@ window.loadManageProductsPage = function(page) {
     search: currentFilters.search,
     cat: currentFilters.cat,
     status: currentFilters.status,
+    sort: currentFilters.sort || 'date_desc',
+    per_row: currentFilters.per_row || 3,
     mode: jQuery('#styliiiish-manage-products-content').data('mode')
 
 }, function (html) {
@@ -214,6 +216,35 @@ window.loadManageProductsPage = function(page) {
         .hide()
         .html(html)
         .fadeIn(180);
+
+    // Apply per_row CSS variable if provided
+    try{
+        var per = currentFilters.per_row || 3;
+        $('#styliiiish-manage-products-content').find('.sty-cards-grid').css('--cards-cols', per);
+    }catch(e){}
+    
+    // Client-side sorting if server doesn't provide sorted HTML
+    try{
+        var sort = currentFilters.sort || 'date_desc';
+        var grid = $('#styliiiish-manage-products-content').find('.sty-cards-grid');
+        if(grid.length){
+            var cards = grid.find('.sty-card').get();
+            cards.sort(function(a,b){
+                var ac = parseInt($(a).data('created')||0,10);
+                var bc = parseInt($(b).data('created')||0,10);
+                var ap = parseFloat($(a).data('price')||0);
+                var bp = parseFloat($(b).data('price')||0);
+
+                if(sort === 'date_desc') return bc - ac;
+                if(sort === 'date_asc') return ac - bc;
+                if(sort === 'price_asc') return ap - bp;
+                if(sort === 'price_desc') return bp - ap;
+                return 0;
+            });
+            // append in new order
+            $(cards).each(function(){ grid.append(this); });
+        }
+    }catch(e){}
 
 });
 
@@ -230,6 +261,17 @@ if ($('#styliiiish-manage-products-content').length) {
         loadManageProductsPage(1);
     }, 200);
 }
+
+// Listen to toolbar controls (sort / per-row) and refresh list
+$(document).on('change', '#styliiiish-sort', function(){
+    currentFilters.sort = $(this).val();
+    loadManageProductsPage(1);
+});
+
+$(document).on('change', '#styliiiish-per-row', function(){
+    currentFilters.per_row = parseInt($(this).val()) || 3;
+    loadManageProductsPage(1);
+});
 
 
 

@@ -131,6 +131,23 @@ $note = get_option('wf_vendor_add_note','');
             </select>
             <?php endif; ?>
 
+            <!-- Sort and density controls -->
+            <label for="styliiiish-sort" style="margin-left:8px;"><?php echo esc_html__('Sort by', 'website-flexi'); ?></label>
+            <select id="styliiiish-sort" style="margin-left:6px;">
+                <option value="date_desc"><?php echo esc_html__('Newest', 'website-flexi'); ?></option>
+                <option value="date_asc"><?php echo esc_html__('Oldest', 'website-flexi'); ?></option>
+                <option value="price_asc"><?php echo esc_html__('Price: Low → High', 'website-flexi'); ?></option>
+                <option value="price_desc"><?php echo esc_html__('Price: High → Low', 'website-flexi'); ?></option>
+            </select>
+
+            <label for="styliiiish-per-row" style="margin-left:12px;"><?php echo esc_html__('Per row', 'website-flexi'); ?></label>
+            <select id="styliiiish-per-row" style="margin-left:6px;">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="4">4</option>
+            </select>
+
 
 
 

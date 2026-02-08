@@ -23,7 +23,8 @@
    ------------------------- */
 .sty-cards-grid{
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
+  /* Number of columns is adjustable via --cards-cols (default falls back to media rules) */
+  grid-template-columns: repeat(var(--cards-cols, 1), 1fr);
   gap: var(--sty-gap);
   margin: 28px auto;
   max-width: 1000px;
@@ -31,15 +32,15 @@
 }
 
 @media (min-width: 480px) {
-  .sty-cards-grid{ grid-template-columns: repeat(2, 1fr); }
+  .sty-cards-grid{ --cards-cols: 2; }
 }
 
 @media (min-width: 900px) {
-  .sty-cards-grid{ grid-template-columns: repeat(3, 1fr); }
+  .sty-cards-grid{ --cards-cols: 3; }
 }
 
 @media (min-width: 1200px) {
-  .sty-cards-grid{ grid-template-columns: repeat(3, 1fr); }
+  .sty-cards-grid{ --cards-cols: 3; }
 }
 
 /* Keep RTL/LTR behavior consistent */
@@ -216,6 +217,7 @@ html[dir="ltr"] .sty-cards-grid{ direction: ltr; }
   display: flex;
   background: #fcfcfd;
   border-top: 1px solid var(--sty-border);
+  align-items: center;
 }
 
 .card-btn{
@@ -227,11 +229,15 @@ html[dir="ltr"] .sty-cards-grid{ direction: ltr; }
   color: var(--sty-text);
   text-decoration: none;
   border-inline-end: 1px solid var(--sty-border);
-  transition: background .15s ease, color .15s ease;
+  transition: background .15s ease, color .15s ease, transform .12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .card-btn:last-child{ border: none; }
-.card-btn:hover, .card-btn:focus{ background: var(--sty-soft); color: var(--sty-main); }
+.card-btn:hover, .card-btn:focus{ background: var(--sty-soft); color: var(--sty-main); transform: translateY(-2px); }
 .card-btn:focus{ outline: 3px solid rgba(79,70,229,0.12); }
 
 .btn-deactivate-user{ color: #b91c1c; }
