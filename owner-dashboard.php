@@ -1045,6 +1045,3 @@ function tv_auto_check_license(){
 
 
 
-
-delete_transient('tv_license_status');
-delete_transient('tv_license_checked');
