@@ -43,6 +43,98 @@ if (!defined('ABSPATH')) {
  */
 define('WF_OWNER_DASHBOARD_PATH', plugin_dir_path(__FILE__));
 define('WF_OWNER_DASHBOARD_URL', plugin_dir_url(__FILE__));
+define('TAAJVENDOR_VERSION', '1.0.0'); // غيرها مع كل إصدار
+
+add_filter('site_transient_update_plugins', 'taajvendor_check_update');
+add_filter('plugins_api', 'taajvendor_plugin_info', 20, 3);
+
+
+/**
+ * Check for updates
+ */
+function taajvendor_check_update($transient){
+
+   if (empty($transient->checked)) {
+      return $transient;
+   }
+
+   $remote = wp_remote_get(
+      'https://taajvendor.com/api/plugin-update.php',
+      ['timeout'=>15]
+   );
+
+   if (
+      is_wp_error($remote) ||
+      wp_remote_retrieve_response_code($remote) != 200
+   ){
+      return $transient;
+   }
+
+   $data = json_decode(wp_remote_retrieve_body($remote));
+
+   if (!$data || empty($data->version)) {
+      return $transient;
+   }
+
+   if (version_compare(TAAJVENDOR_VERSION, $data->version, '<')) {
+
+      $plugin = plugin_basename(__FILE__);
+
+      $transient->response[$plugin] = (object)[
+         'slug'        => 'taajvendor',
+         'plugin'      => $plugin,
+         'new_version' => $data->version,
+         'url'         => 'https://taajvendor.com',
+         'package'     => $data->download_url,
+      ];
+   }
+
+   return $transient;
+}
+
+
+/**
+ * Plugin info popup
+ */
+function taajvendor_plugin_info($res, $action, $args){
+
+   if ($action !== 'plugin_information') {
+      return $res;
+   }
+
+   if ($args->slug !== 'taajvendor') {
+      return $res;
+   }
+
+   $remote = wp_remote_get(
+      'https://taajvendor.com/api/plugin-update.php',
+      ['timeout'=>15]
+   );
+
+   if (is_wp_error($remote)) {
+      return $res;
+   }
+
+   $data = json_decode(wp_remote_retrieve_body($remote));
+
+   if (!$data) {
+      return $res;
+   }
+
+   return (object)[
+      'name'          => $data->name,
+      'slug'          => $data->slug,
+      'version'       => $data->version,
+      'author'        => '<a href="https://taajvendor.com">TaajVendor</a>',
+      'homepage'      => 'https://taajvendor.com',
+      'download_link' => $data->download_url,
+      'requires'      => $data->requires,
+      'tested'        => $data->tested,
+      'requires_php'  => $data->requires_php,
+      'sections'      => $data->sections,
+   ];
+}
+
 
 
 /**
