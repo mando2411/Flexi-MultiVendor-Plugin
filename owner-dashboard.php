@@ -1,10 +1,19 @@
 <?php
 /*
-Plugin Name: WebsiteFlexi Owner Dashboard & Marketplace
-Description: WebsiteFlexi Dashboard & Marketplace — Owner control, managers, dashboard access and customer dress marketplace.
-Version: 1.2.0
-Author: WebsiteFlexi
+Plugin Name: TaajVendor — Multi-Vendor Marketplace for WordPress
+Plugin URI:  https://taajvendor.com
+Description: Professional multi-vendor marketplace and vendor dashboard system for WordPress & WooCommerce. Includes vendor onboarding, product management, wallet, analytics, and owner controls.
+Version: 1.3.0
+Author: Mahmoud (TaajVendor Team)
+Author URI: https://taajvendor.com
+Text Domain: taajvendor
+Domain Path: /languages
+Requires at least: 5.8
+Tested up to: 6.4
+Requires PHP: 7.4
+License: Commercial
 */
+
 
 
 
