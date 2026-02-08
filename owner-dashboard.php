@@ -19,18 +19,27 @@ if (!defined('ABSPATH')) {
 
 
 
-define('TAAJVENDOR_VERSION', '1.2.0'); // غيرها مع كل إصدار
+define('TAAJVENDOR_VERSION', '1.2.0');
+
 
 add_filter('site_transient_update_plugins', 'taajvendor_check_update');
 add_filter('plugins_api', 'taajvendor_plugin_info', 20, 3);
 
 
-/**
- * Check for updates
- */
+/* =========================
+   Check for Updates
+========================= */
+
 function taajvendor_check_update($transient){
 
    if (empty($transient->checked)) {
+      return $transient;
+   }
+
+   /* Use cached license */
+   $license_status = get_transient('tv_license_status');
+
+   if ($license_status !== 'valid') {
       return $transient;
    }
 
@@ -52,11 +61,7 @@ function taajvendor_check_update($transient){
       return $transient;
    }
 
-   if (
-   tv_verify_license() &&
-   version_compare(TAAJVENDOR_VERSION,$data->version,'<')
-){
-
+   if (version_compare(TAAJVENDOR_VERSION, $data->version, '<')) {
 
       $plugin = plugin_basename(__FILE__);
 
@@ -71,31 +76,33 @@ function taajvendor_check_update($transient){
 
    return $transient;
 }
-add_action('admin_init', 'taajvendor_show_license_notice');
+
+
+/* =========================
+   License Notice
+========================= */
+
+add_action('admin_notices', 'taajvendor_show_license_notice');
 
 function taajvendor_show_license_notice(){
 
-   if (!get_transient('tv_license_ok')) {
+   if (get_transient('tv_license_status') !== 'valid') {
 
-      add_action('admin_notices', function(){
+      echo '<div class="notice notice-error">
+         <p><strong>TaajVendor:</strong> License inactive. Please activate your license.</p>
+      </div>';
 
-         echo '<div class="notice notice-error">
-            <p><strong>TaajVendor:</strong> License inactive. Please activate your license.</p>
-         </div>';
-
-      });
    }
 }
 
 
-/**
- * Plugin info popup
- */
+/* =========================
+   Plugin Info Popup
+========================= */
+
 function taajvendor_plugin_info($res, $action, $args){
 
-   if ($action !== 'plugin_information') {
-      return $res;
-   }
+   if ($action !== 'plugin_information') return $res;
 
    if (empty($args->slug) || $args->slug !== 'taajvendor') {
       return $res;
@@ -106,9 +113,7 @@ function taajvendor_plugin_info($res, $action, $args){
       ['timeout' => 15]
    );
 
-   if (is_wp_error($remote)) {
-      return $res;
-   }
+   if (is_wp_error($remote)) return $res;
 
    $data = json_decode(wp_remote_retrieve_body($remote), true);
 
@@ -131,7 +136,6 @@ function taajvendor_plugin_info($res, $action, $args){
 
    return $info;
 }
-
 
 
 
