@@ -162,6 +162,9 @@ $(document).on('submit','#addProductForm',function(e){
      if(res.success){
 
         Swal.fire('Saved','Done','success');
+          // Close the Add Product modal after a successful save
+          // (preserves the Swal toast and other UI behavior)
+          closeBuilder();
 
      }else{
 
