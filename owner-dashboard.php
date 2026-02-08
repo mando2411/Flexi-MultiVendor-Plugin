@@ -892,15 +892,20 @@ function tv_render_license_page(){
 
    if (isset($_POST['tv_save_license'])) {
 
-      check_admin_referer('tv_license_nonce');
+   check_admin_referer('tv_license_nonce');
 
-      update_option(
-         'tv_license_key',
-         sanitize_text_field($_POST['tv_license'])
-      );
+   update_option(
+      'tv_license_key',
+      sanitize_text_field($_POST['tv_license'])
+   );
 
-      delete_transient('tv_license_status');
-   }
+   // Force recheck
+   delete_transient('tv_license_status');
+   delete_transient('tv_license_checked');
+
+   tv_verify_license(); // ← أهم سطر
+}
+
 
    $license = get_option('tv_license_key','');
    $status  = get_transient('tv_license_status');
