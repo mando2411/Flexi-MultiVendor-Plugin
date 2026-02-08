@@ -64,9 +64,10 @@
 .product-builder{
    display: grid;
    grid-template-columns: 380px 1fr;
+   grid-template-rows: 1fr;
    gap: 24px;
    padding: 24px;
-   max-height: 90vh;
+   height: 100%;
    overflow: hidden;
 }
 
@@ -143,9 +144,8 @@
 =========================== */
 
 .builder-form{
-   flex: 1;
+   height: 100%;
    overflow-y: auto;
-
    padding: 22px 22px 90px 22px;
    /* bottom = مساحة للأزرار */
 }
