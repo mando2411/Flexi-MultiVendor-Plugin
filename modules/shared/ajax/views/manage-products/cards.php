@@ -85,7 +85,7 @@ $is_deactivated =
         <div class="card-meta">
 
             <span class="card-price">
-                <?= $price ? esc_html($price).' EGP' : '—' ?>
+                <?= $price ? esc_html($price) . ' ' . esc_html__( 'EGP', 'website-flexi' ) : esc_html__( '—', 'website-flexi' ) ?>
             </span>
 
             <?php if(!empty($terms)): ?>
@@ -102,35 +102,35 @@ $is_deactivated =
     <!-- Actions -->
     <div class="card-footer">
 
-        <a href="#"
-           class="card-btn btn-edit-product"
-           data-id="<?= esc_attr($id) ?>">
-           ✏️ Edit
-        </a>
+          <a href="#"
+              class="card-btn btn-edit-product"
+              data-id="<?= esc_attr($id) ?>">
+              ✏️ <?= esc_html__( 'Edit', 'website-flexi' ) ?>
+          </a>
 
-        <a href="<?= esc_url(get_permalink($id)) ?>"
-           target="_blank"
-           class="card-btn">
-           👁 View
-        </a>
+          <a href="<?= esc_url(get_permalink($id)) ?>"
+              target="_blank"
+              class="card-btn">
+              👁 <?= esc_html__( 'View', 'website-flexi' ) ?>
+          </a>
 
         <?php if($is_user): ?>
 
             <?php if($is_deactivated): ?>
 
-                <a href="#"
-                   class="card-btn btn-activate-user"
-                   data-id="<?= esc_attr($id) ?>">
-                   ⚡ Activate
-                </a>
+                     <a href="#"
+                         class="card-btn btn-activate-user"
+                         data-id="<?= esc_attr($id) ?>">
+                         ⚡ <?= esc_html__( 'Activate', 'website-flexi' ) ?>
+                     </a>
 
             <?php else: ?>
 
-                <a href="#"
-                   class="card-btn btn-deactivate-user"
-                   data-id="<?= esc_attr($id) ?>">
-                   ❌ Deactivate
-                </a>
+                     <a href="#"
+                         class="card-btn btn-deactivate-user"
+                         data-id="<?= esc_attr($id) ?>">
+                         ❌ <?= esc_html__( 'Deactivate', 'website-flexi' ) ?>
+                     </a>
 
             <?php endif; ?>
 
@@ -144,7 +144,7 @@ $is_deactivated =
 
 <?php else: ?>
 
-<p class="sty-empty">No products found.</p>
+<p class="sty-empty"><?= esc_html__( 'No products found.', 'website-flexi' ) ?></p>
 
 <?php endif; ?>
 
