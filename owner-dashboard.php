@@ -872,20 +872,6 @@ function wf_create_reports_table() {
 
 
 
-add_action('admin_menu','taajvendor_license_page');
-
-function taajvendor_license_page(){
-
-   add_submenu_page(
-      'options-general.php',
-      'TaajVendor License',
-      'TaajVendor License',
-      'manage_options',
-      'taajvendor-license',
-      'taajvendor_license_ui'
-   );
-}
-
 function taajvendor_license_ui(){
 
    if(isset($_POST['tv_save_license'])){
@@ -950,21 +936,25 @@ function taajvendor_validate_license(){
 
 
 
-add_action('admin_menu', 'taajvendor_add_license_menu');
+/* Add License Page */
+add_action('admin_menu', 'tv_add_license_menu');
 
-function taajvendor_add_license_menu(){
+function tv_add_license_menu(){
 
    add_options_page(
       'TaajVendor License',
       'TaajVendor License',
       'manage_options',
       'taajvendor-license',
-      'taajvendor_license_page'
+      'tv_render_license_page'
    );
 }
 
 
-function taajvendor_license_page(){
+/* Render License Page */
+if (!function_exists('tv_render_license_page')) {
+
+function tv_render_license_page(){
 
    if (isset($_POST['tv_save_license'])) {
 
@@ -1050,6 +1040,9 @@ function taajvendor_license_page(){
 
 <?php
 }
+
+}
+
 
 
 function taajvendor_verify_license(){
