@@ -202,7 +202,7 @@
 
 .builder-actions{
    position: sticky;
-   bottom: 0 !important;
+   bottom: -20 !important;
 
    background: #fff;
    border-top: 1px solid #eee;
