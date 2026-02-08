@@ -201,7 +201,7 @@
 .builder-actions{
    z-index: 9999;
    position: sticky;
-   bottom:0;
+   bottom:0 !important;
    background:#fff;
    padding:12px 0;
    display:flex;
