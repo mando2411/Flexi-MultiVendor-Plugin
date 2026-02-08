@@ -950,3 +950,156 @@ function taajvendor_validate_license(){
 
 
 
+add_action('admin_menu', 'taajvendor_add_license_menu');
+
+function taajvendor_add_license_menu(){
+
+   add_options_page(
+      'TaajVendor License',
+      'TaajVendor License',
+      'manage_options',
+      'taajvendor-license',
+      'taajvendor_license_page'
+   );
+}
+
+
+function taajvendor_license_page(){
+
+   if (isset($_POST['tv_save_license'])) {
+
+      check_admin_referer('tv_license_nonce');
+
+      update_option(
+         'tv_license_key',
+         sanitize_text_field($_POST['tv_license'])
+      );
+
+      delete_transient('tv_license_status');
+   }
+
+   $license = get_option('tv_license_key','');
+   $status  = get_transient('tv_license_status');
+   ?>
+
+   <div class="wrap">
+   <h1>TaajVendor License</h1>
+
+   <form method="post">
+
+      <?php wp_nonce_field('tv_license_nonce'); ?>
+
+      <table class="form-table">
+
+         <tr>
+            <th>License Key</th>
+            <td>
+               <input type="text"
+                  name="tv_license"
+                  value="<?php echo esc_attr($license); ?>"
+                  style="width:400px"
+                  placeholder="TV-XXXX-XXXX-XXXX">
+            </td>
+         </tr>
+
+      </table>
+
+      <p>
+         <button class="button button-primary" name="tv_save_license">
+            Save & Activate
+         </button>
+      </p>
+
+   </form>
+
+   <?php
+
+   if ($status) {
+
+      echo '<p><strong>Status:</strong> ';
+
+      switch ($status) {
+
+         case 'valid':
+            echo '<span style="color:green">Active</span>';
+            break;
+
+         case 'expired':
+            echo '<span style="color:orange">Expired</span>';
+            break;
+
+         case 'inactive':
+            echo '<span style="color:red">Inactive</span>';
+            break;
+
+         case 'invalid':
+            echo '<span style="color:red">Invalid</span>';
+            break;
+
+         case 'invalid_domain':
+            echo '<span style="color:red">Used on another site</span>';
+            break;
+      }
+
+      echo '</p>';
+   }
+
+   ?>
+
+   </div>
+
+<?php
+}
+
+
+function taajvendor_verify_license(){
+
+   $key = get_option('tv_license_key');
+
+   if (!$key) return false;
+
+   $res = wp_remote_post(
+      'https://taajvendor.com/api/license-api.php',
+      [
+         'timeout'=>15,
+         'body'=>[
+            'license'=>$key,
+            'domain'=>home_url()
+         ]
+      ]
+   );
+
+   if (is_wp_error($res)) return false;
+
+   $data = json_decode(
+      wp_remote_retrieve_body($res),
+      true
+   );
+
+   if (empty($data['status'])) return false;
+
+   set_transient(
+      'tv_license_status',
+      $data['status'],
+      DAY_IN_SECONDS
+   );
+
+   return ($data['status'] === 'valid');
+}
+
+
+
+add_action('admin_init','taajvendor_auto_check_license');
+
+function taajvendor_auto_check_license(){
+
+   if (get_transient('tv_license_checked')) return;
+
+   taajvendor_verify_license();
+
+   set_transient(
+      'tv_license_checked',
+      1,
+      DAY_IN_SECONDS
+   );
+}
