@@ -1054,22 +1054,30 @@ function taajvendor_verify_license(){
    $res = wp_remote_post(
       'https://taajvendor.com/api/license-api.php',
       [
-         'timeout'=>15,
-         'body'=>[
-            'license'=>$key,
-            'domain'=>home_url()
+         'timeout' => 15,
+         'body' => [
+            'license' => $key,
+            'domain'  => home_url()
          ]
       ]
    );
 
-   if (is_wp_error($res)) return false;
+   if (is_wp_error($res)) {
+      return false;
+   }
 
-   $data = json_decode(
-      wp_remote_retrieve_body($res),
-      true
-   );
+   $body = wp_remote_retrieve_body($res);
 
-   if (empty($data['status'])) return false;
+   if (empty($body)) {
+      return false;
+   }
+
+   $data = json_decode($body, true);
+
+   // ✅ أهم سطر
+   if (!is_array($data) || empty($data['status'])) {
+      return false;
+   }
 
    set_transient(
       'tv_license_status',
@@ -1079,6 +1087,7 @@ function taajvendor_verify_license(){
 
    return ($data['status'] === 'valid');
 }
+
 
 
 
