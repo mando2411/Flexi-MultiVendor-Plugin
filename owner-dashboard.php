@@ -3,7 +3,7 @@
 Plugin Name: TaajVendor — Multi-Vendor Marketplace for WordPress
 Plugin URI:  https://taajvendor.com
 Description: Professional multi-vendor marketplace and vendor dashboard system for WordPress & WooCommerce. Includes vendor onboarding, product management, wallet, analytics, and owner controls.
-Version: 1.3.0
+Version: 1.2.0
 Author: Mahmoud (TaajVendor Team)
 Author URI: https://taajvendor.com
 Text Domain: taajvendor
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 
 
 
-define('TAAJVENDOR_VERSION', '1.3.0'); // غيرها مع كل إصدار
+define('TAAJVENDOR_VERSION', '1.2.0'); // غيرها مع كل إصدار
 
 add_filter('site_transient_update_plugins', 'taajvendor_check_update');
 add_filter('plugins_api', 'taajvendor_plugin_info', 20, 3);
