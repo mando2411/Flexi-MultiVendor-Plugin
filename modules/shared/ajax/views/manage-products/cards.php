@@ -27,6 +27,18 @@ $price  = $p->get_regular_price();
 $img    = $p->get_image('medium');
 $status = $p->get_status();
 
+// Map internal WP statuses to user-friendly labels (publish -> Active)
+$status_labels = [
+    'publish' => 'Active',
+    'draft'   => 'Draft',
+    'pending' => 'Pending',
+    'private' => 'Private',
+    'future'  => 'Scheduled',
+    'trash'   => 'Trashed'
+];
+
+$status_label = isset($status_labels[$status]) ? $status_labels[$status] : ucfirst($status);
+
 $terms = wp_get_post_terms($id,'product_cat',['fields'=>'names']);
 
 $is_deactivated =
@@ -42,7 +54,7 @@ $is_deactivated =
 
     <!-- Status -->
     <span class="card-badge badge-<?= esc_attr($status) ?>">
-        <?= esc_html__( ucfirst($status), 'website-flexi' ) ?>
+        <?= esc_html( $status_label ) ?>
     </span>
 
     <?php if($is_deactivated): ?>
