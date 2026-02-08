@@ -28,6 +28,9 @@
 /* Modal Box */
 
 .wf-ui-modal-box{
+   display: flex;
+   flex-direction: column;
+   max-height: 95vh;
     background:var(--p-bg);
     width:95%;
     max-width:1100px;
@@ -136,6 +139,7 @@
 =========================== */
 
 .builder-form{
+   flex: 1;
    overflow-y:auto;
    max-height:90vh;
    padding-right:10px;
