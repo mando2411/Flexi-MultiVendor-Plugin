@@ -30,16 +30,20 @@
 .wf-ui-modal-box{
    display: flex;
    flex-direction: column;
+
+   height: 90vh;
    max-height: 95vh;
-    background:var(--p-bg);
-    width:95%;
-    max-width:1100px;
-    height:90vh;
-    margin:4vh auto;
-    border-radius:var(--p-radius);
-    box-shadow:var(--p-shadow);
-    padding:22px;
-    overflow:hidden;
+
+   background: var(--p-bg);
+   width: 95%;
+   max-width: 1100px;
+   margin: 4vh auto;
+
+   border-radius: var(--p-radius);
+   box-shadow: var(--p-shadow);
+
+   padding: 0; /* مهم */
+   overflow: hidden;
 }
 
 /* Mobile */
@@ -140,12 +144,10 @@
 
 .builder-form{
    flex: 1;
-   overflow-y:auto;
-   max-height:90vh;
-   padding-right:10px;
+   overflow-y: auto;
 
-   /* Reserve space for the action buttons (prevents injected attrs from pushing buttons out) */
-   padding-bottom: 120px; /* minimal reserve; matches .builder-actions height */
+   padding: 22px 22px 90px 22px;
+   /* bottom = مساحة للأزرار */
 }
 
 
@@ -199,14 +201,18 @@
 /* Buttons */
 
 .builder-actions{
-   z-index: 9999;
    position: sticky;
-   bottom:0 !important;
-   background:#fff;
-   padding:12px 0;
-   display:flex;
-   gap:10px;
-   border-top:1px solid #eee;
+   bottom: 0;
+
+   background: #fff;
+   border-top: 1px solid #eee;
+
+   padding: 12px 22px;
+
+   display: flex;
+   gap: 10px;
+
+   z-index: 100;
 }
 
 
