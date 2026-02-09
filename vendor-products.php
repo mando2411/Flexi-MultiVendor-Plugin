@@ -379,6 +379,14 @@ function sendModeration(productID, moderation, reason) {
                 setTimeout(() => {
                     card.remove();
                 }, 250);
+            
+                // Reload manage-products list if present
+                try{
+                    if (typeof loadManageProductsPage === 'function') {
+                        var page = (window.currentFilters && window.currentFilters.page) ? window.currentFilters.page : 1;
+                        loadManageProductsPage(page);
+                    }
+                }catch(e){}
 
             }).fail(function(){
                 Swal.fire('Error', 'Server error.', 'error');

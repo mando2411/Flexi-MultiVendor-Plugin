@@ -727,6 +727,14 @@ $(document).on("click", ".btn-duplicate", function (e) {
 
                         Swal.fire("Deleted!", "Product removed successfully", "success");
 
+                        // Reload manage-products list if available
+                        try{
+                            if (typeof loadManageProductsPage === 'function') {
+                                var page = (window.currentFilters && window.currentFilters.page) ? window.currentFilters.page : 1;
+                                loadManageProductsPage(page);
+                            }
+                        }catch(e){ }
+
                     }, 'json').fail(function () {
                         Swal.fire("Error", "Error communicating with server.", "error");
                     });
@@ -1920,6 +1928,14 @@ $(document).on('click', '.btn-deactivate-user', function (e) {
 
             Swal.fire('Done', 'Dress deactivated.', 'success');
 
+            // Reload manage-products list if available
+            try{
+                if (typeof loadManageProductsPage === 'function') {
+                    var page = (window.currentFilters && window.currentFilters.page) ? window.currentFilters.page : 1;
+                    loadManageProductsPage(page);
+                }
+            }catch(e){ }
+
         }, 'json');
     });
 });
@@ -1984,6 +2000,14 @@ $(document).on('click', '.btn-activate-user', function (e) {
                 // ما نخليش الزر يروح Deactivate، لأنه مش Active أصلاً
                 // نخليه زي ما هو (Activate)
             }
+
+            // Reload manage-products list if available
+            try{
+                if (typeof loadManageProductsPage === 'function') {
+                    var page = (window.currentFilters && window.currentFilters.page) ? window.currentFilters.page : 1;
+                    loadManageProductsPage(page);
+                }
+            }catch(e){ }
 
         }, 'json');
 
