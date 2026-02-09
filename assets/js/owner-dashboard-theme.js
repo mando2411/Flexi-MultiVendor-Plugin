@@ -200,7 +200,7 @@ window.loadManageProductsPage = function(page) {
 
     $.post(ajax_object.ajax_url, {
     action: 'styliiiish_manage_products_list',
-
+    nonce: ajax_object.nonce,
 
     page: currentFilters.page,
     search: currentFilters.search,
@@ -395,6 +395,7 @@ $(document).on('change', '#styliiiish-per-row', function(){
 
                 $.post(ajax_object.ajax_url, {
                     action: 'styliiiish_bulk_action',
+                    nonce: ajax_object.nonce,
                     bulk_action: action,
                     ids: ids
                 }, function(response){
@@ -579,6 +580,7 @@ $(document).on('change', '#styliiiish-per-row', function(){
             // 🔥 بعد الحفظ — اعمل Pending Check
                 $.post(ajax_object.ajax_url, {
                     action: "styliiiish_force_pending_check",
+                    nonce: ajax_object.nonce,
                     product_id: currentProductID
                 });
 
@@ -636,6 +638,7 @@ $(document).on("click", ".btn-duplicate", function (e) {
 
         $.post(ajax_object.ajax_url, {
             action: "styliiiish_duplicate_product",
+            nonce: ajax_object.nonce,
             product_id: product_id
         }, function(response){
 
@@ -703,6 +706,7 @@ $(document).on("click", ".btn-duplicate", function (e) {
 
                     $.post(ajax_object.ajax_url, {
                         action: "styliiiish_delete_product",
+                        nonce: ajax_object.nonce,
                         product_id: product_id
                     }, function(response) {
 
@@ -754,6 +758,7 @@ $(document).on("click", ".btn-duplicate", function (e) {
 
             $.post(ajax_object.ajax_url, {
                 action: 'styliiiish_update_status',
+                nonce: ajax_object.nonce,
                 product_id: product_id,
                 status: status
             }, function (response) {
@@ -1135,7 +1140,7 @@ function updateImageRow(prodID, mainHTML) {
 
 // API Helper
 window.sendRequest = function(action, data, onSuccess) {
-    $.post(ajax_object.ajax_url, { action, ...data }, function(response) {
+    $.post(ajax_object.ajax_url, { action, nonce: ajax_object.nonce, ...data }, function(response) {
         if (!response || response.success !== true) {
             Swal.fire("Error", response?.data?.message || "Error occurred.", "error");
             return;
@@ -1243,6 +1248,9 @@ $(document).on("change", "#styliiiish-upload-input", function () {
 
 
         formData.append("file", file);
+
+        // Include nonce for upload requests
+        formData.append('nonce', ajax_object.nonce);
 
 
         $.ajax({
@@ -1795,6 +1803,7 @@ $(document).on("blur", ".inline-edit", function () {
         // ========== AJAX SAVE ==========
         $.post(ajax_object.ajax_url, {
             action: "styliiiish_quick_update_product",
+            nonce: ajax_object.nonce,
             product_id: id,
             field: field,
             value: value
@@ -1826,6 +1835,7 @@ $(document).on("blur", ".inline-edit", function () {
             // Auto pending check
             $.post(ajax_object.ajax_url, {
                 action: "styliiiish_trigger_pending_check",
+                nonce: ajax_object.nonce,
                 product_id: id
             });
 
@@ -1890,6 +1900,7 @@ $(document).on('click', '.btn-deactivate-user', function (e) {
 
         $.post(ajax_object.ajax_url, {
             action: 'styliiiish_user_deactivate_product',
+            nonce: ajax_object.nonce,
             product_id: id
         }, function (res) {
 
@@ -1937,6 +1948,7 @@ $(document).on('click', '.btn-activate-user', function (e) {
 
         $.post(ajax_object.ajax_url, {
             action: 'styliiiish_user_activate_product',
+            nonce: ajax_object.nonce,
             product_id: id
         }, function (res) {
 
@@ -1993,6 +2005,7 @@ function changeProductStatus(productID, newStatus) {
     console.log("Changing status for:", productID, "→", newStatus);
     $.post(ajax_object.ajax_url, {
         action: "styliiiish_update_status",
+        nonce: ajax_object.nonce,
         product_id: productID,
         status: newStatus
     }, function(response) {

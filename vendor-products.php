@@ -340,6 +340,7 @@ jQuery(function($){
 function sendModeration(productID, moderation, reason) {
     return $.post(ajax_object.ajax_url, {
         action: 'styliiiish_vendor_moderate',
+        nonce: ajax_object.nonce,
         product_id: productID,
         moderation: moderation,
         reason: reason   // ????? ??? ???? || ''
@@ -483,6 +484,7 @@ $(document).on("click", ".vp-filter-btn", function (e) {
     // AJAX request
     $.post(ajax_object.ajax_url, {
         action: "sty_filter_vendor_products",
+        nonce: ajax_object.nonce,
         status: status
     }, function (resp) {
 
@@ -709,6 +711,7 @@ $(document).on("click", ".sty-open-gallery", function () {
 
     $.post(ajax_object.ajax_url, {
         action: "sty_get_gallery",
+        nonce: ajax_object.nonce,
         product_id: pid
     }, function(resp) {
 
@@ -798,6 +801,7 @@ $(document).on("click", ".sty-fullscreen-close, .sty-fullscreen-view", function(
     function loadPending() {
         $.post(ajax_object.ajax_url, {
             action: "sty_filter_vendor_products",
+            nonce: ajax_object.nonce,
             status: "pending"
         }, function(resp) {
 

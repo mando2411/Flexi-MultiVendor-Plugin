@@ -60,6 +60,7 @@ window.ManageProductsModule = {
 
         $.post(ajax_object.ajax_url, {
             action: 'styliiiish_manage_products_list',
+            nonce: ajax_object.nonce,
             ...self.filters
         }, function(response){
             self.container.html(response);

@@ -342,7 +342,8 @@ else {
 
     $.post(wfVendorOrders.ajax_url, {
         action: 'wf_get_order_full_data',
-        order_id: order_id
+      nonce: wfVendorOrders.nonce,
+      order_id: order_id
     }, function (res) {
         if (!res.success) {
         return;
