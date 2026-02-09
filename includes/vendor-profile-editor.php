@@ -314,6 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 add_action('wp_ajax_styliiiish_upload_store_image', 'styliiiish_upload_store_image');
 function styliiiish_upload_store_image() {
+    check_ajax_referer('ajax_nonce','nonce');
 
     if (!is_user_logged_in()) {
         wp_send_json_error(['message' => 'Unauthorized']);

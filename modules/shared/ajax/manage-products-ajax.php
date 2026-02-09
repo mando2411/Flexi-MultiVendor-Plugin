@@ -51,13 +51,7 @@ add_action('pre_get_posts', function ($q) {
  /*_______________________________________________________________________________________________________________________________________________________*/
  
  add_action('wp_ajax_styliiiish_add_new_product', function () {
-     
-     if(
- !isset($_POST['nonce']) ||
- !wp_verify_nonce($_POST['nonce'],'ajax_nonce')
-){
-   wp_send_json_error(['message'=>'Bad nonce']);
-}
+     check_ajax_referer('ajax_nonce','nonce');
 
 
     $user_id = get_current_user_id();
@@ -164,13 +158,7 @@ add_action('pre_get_posts', function ($q) {
  /*_______________________________________________________________________________________________________________________________________________________*/ 
  
 add_action('wp_ajax_styliiiish_get_attributes', function () {
-
-    if(
- !isset($_POST['nonce']) ||
- !wp_verify_nonce($_POST['nonce'],'ajax_nonce')
-){
-   wp_send_json_error(['message'=>'Bad nonce']);
-}
+    check_ajax_referer('ajax_nonce','nonce');
 
 
     $pid = intval($_POST['product_id'] ?? 0);
@@ -320,13 +308,7 @@ add_action('wp_ajax_styliiiish_get_attributes', function () {
 
 
 add_action('wp_ajax_styliiiish_save_attributes', function () {
-
-    if(
- !isset($_POST['nonce']) ||
- !wp_verify_nonce($_POST['nonce'],'ajax_nonce')
-){
-   wp_send_json_error(['message'=>'Bad nonce']);
-}
+    check_ajax_referer('ajax_nonce','nonce');
 
 
 
@@ -428,6 +410,7 @@ add_action('wp_ajax_styliiiish_save_attributes', function () {
    Custom Image Upload (no media library UI)
 ================================== */
 add_action('wp_ajax_styliiiish_upload_image_custom', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     if (!is_user_logged_in()) {
         wp_send_json_error(['message' => 'Not logged in']);
@@ -526,6 +509,7 @@ add_action('wp_ajax_styliiiish_upload_image_custom', function () {
    AJAX: Get Images Modal Content
 ================================== */
 add_action('wp_ajax_styliiiish_get_images', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
     $user_id    = get_current_user_id();
@@ -567,6 +551,7 @@ add_action('wp_ajax_styliiiish_get_images', function () {
 ================================== */
 
 add_action('wp_ajax_styliiiish_add_image_to_product', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id    = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
     $attachment_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
@@ -625,6 +610,7 @@ add_action('wp_ajax_styliiiish_add_image_to_product', function () {
    AJAX: Set Featured Image
 ================================== */
 add_action('wp_ajax_styliiiish_set_featured_image', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id    = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
     $attachment_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
@@ -668,6 +654,7 @@ add_action('wp_ajax_styliiiish_set_featured_image', function () {
    AJAX: Remove image (featured or gallery)
 ================================== */
 add_action('wp_ajax_styliiiish_remove_image', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id    = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
     $attachment_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
@@ -747,7 +734,6 @@ add_action('wp_ajax_styliiiish_remove_image', function () {
    AJAX: Load Categories
 ================================== */
 add_action('wp_ajax_styliiiish_get_cats', function () {
-
     check_ajax_referer('ajax_nonce','nonce');
 
     if( ! current_user_can('edit_products') ){
@@ -826,7 +812,6 @@ add_action('wp_ajax_styliiiish_get_cats', function () {
    AJAX: Save Categories
 ================================== */
 add_action('wp_ajax_styliiiish_save_cats', function () {
-
     check_ajax_referer('ajax_nonce','nonce');
 
     if( ! current_user_can('edit_products') ){
@@ -869,6 +854,7 @@ add_action('wp_ajax_styliiiish_save_cats', function () {
    AJAX: Update Product Status
 ================================== */
 add_action('wp_ajax_styliiiish_update_status', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     if (!current_user_can('manage_woocommerce')) {
         wp_send_json_error(['message' => 'No permission']);
@@ -902,6 +888,7 @@ add_action('wp_ajax_styliiiish_update_status', function () {
    AJAX: Delete Product (NO RELOAD)
 ================================== */
 add_action('wp_ajax_styliiiish_delete_product', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
 
@@ -935,6 +922,7 @@ add_action('wp_ajax_styliiiish_delete_product', function () {
    AJAX: Duplicate Product
 ================================== */
 add_action('wp_ajax_styliiiish_duplicate_product', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     if (!current_user_can('edit_products')) {
         wp_send_json_error(['message' => 'No permission']);
@@ -995,6 +983,7 @@ add_action('wp_ajax_styliiiish_duplicate_product', function () {
    AJAX: Quick Inline Update (name/price/description)
 ================================== */
 add_action('wp_ajax_styliiiish_quick_update_product', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id = intval($_POST['product_id'] ?? 0);
     $field      = sanitize_key($_POST['field'] ?? '');
@@ -1130,6 +1119,7 @@ add_action('wp_ajax_styliiiish_quick_update_product', function () {
    AJAX: Bulk Actions
 ================================== */
 add_action('wp_ajax_styliiiish_bulk_action', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     if (!current_user_can('edit_products')) {
         wp_send_json_error(['message' => 'No permission']);
@@ -1481,6 +1471,7 @@ include plugin_dir_path(__FILE__) . '../../add-product/modal.php';
    AJAX: Products List (Pagination + Filters)
 ================================== */
 add_action('wp_ajax_styliiiish_manage_products_list', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     if (!is_user_logged_in()) {
         wp_die('No permission');
@@ -1706,6 +1697,7 @@ function styliiiish_auto_pending_check( $product_id ) {
    AJAX: Trigger Final Pending Check
 ================================== */
 add_action('wp_ajax_styliiiish_trigger_pending_check', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
 
@@ -1721,6 +1713,7 @@ add_action('wp_ajax_styliiiish_trigger_pending_check', function () {
 
 
 add_action('wp_ajax_styliiiish_force_pending_check', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id = intval($_POST['product_id']);
     if (!$product_id) {
@@ -1743,6 +1736,7 @@ add_action('wp_ajax_styliiiish_force_pending_check', function () {
    AJAX: User Deactivate Product
 ================================== */
 add_action('wp_ajax_styliiiish_user_deactivate_product', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
 
@@ -1785,6 +1779,7 @@ add_action('wp_ajax_styliiiish_user_deactivate_product', function () {
    AJAX: User Activate Product
 ================================== */
 add_action('wp_ajax_styliiiish_user_activate_product', function () {
+    check_ajax_referer('ajax_nonce','nonce');
 
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
 
@@ -1853,13 +1848,7 @@ add_action('wp_ajax_styliiiish_user_activate_product', function () {
 add_action('wp_ajax_styliiiish_add_product','sty_add_product');
 
 function sty_add_product(){
-
-    if(
-        empty($_POST['nonce']) ||
-        !wp_verify_nonce($_POST['nonce'],'ajax_nonce')
-    ){
-        wp_send_json_error(['msg'=>'Bad nonce']);
-    }
+    check_ajax_referer('ajax_nonce','nonce');
 
     if(!is_user_logged_in()){
         wp_send_json_error(['msg'=>'Login required']);

@@ -73,6 +73,10 @@ function styliiiish_get_reject_reasons() {
  */
 add_action( 'wp_ajax_styliiiish_vendor_moderate', 'styliiiish_vendor_moderate_cb' );
 function styliiiish_vendor_moderate_cb() {
+    // Nonce: accept either frontend nonces used across scripts
+    if ( empty($_POST['nonce']) || ( ! wp_verify_nonce($_POST['nonce'], 'styliiiish_nonce') && ! wp_verify_nonce($_POST['nonce'], 'ajax_nonce') ) ) {
+        wp_send_json_error(['message' => 'Bad nonce']);
+    }
 
     // ????????? ????????
     $user_type = wf_od_get_user_type(get_current_user_id());
@@ -182,6 +186,9 @@ function styliiiish_vendor_moderate_cb() {
 
 add_action('wp_ajax_sty_filter_vendor_products', 'sty_filter_vendor_products_cb');
 function sty_filter_vendor_products_cb() {
+    if ( empty($_POST['nonce']) || ( ! wp_verify_nonce($_POST['nonce'], 'styliiiish_nonce') && ! wp_verify_nonce($_POST['nonce'], 'ajax_nonce') ) ) {
+        wp_send_json_error(['message' => 'Bad nonce']);
+    }
 
     $user_type = wf_od_get_user_type(get_current_user_id());
     if (!in_array($user_type, ['manager', 'dashboard'])) {
@@ -544,21 +551,21 @@ function sty_render_vendor_single_card($product_id){
     $name       = $p->get_name();
     $desc       = wp_trim_words( $p->get_description(), 20, '...' );
     $price      = $p->get_regular_price();
-    $price      = $price ? wc_price($price) : '—';
+    $price      = $price ? wc_price($price) : 'ï¿½';
     $date_obj = $p->get_date_created();
 
 		if ($date_obj) {
 			$date = $date_obj->date('Y-m-d H:i');
 		} else {
 			$post = get_post($product_id);
-			$date = $post ? date('d M Y --- h:i A', strtotime($post->post_date)) : '—';
+			$date = $post ? date('d M Y --- h:i A', strtotime($post->post_date)) : 'ï¿½';
 		}
 	$source = $date_obj ? 'Vendor' : 'Admin';
     $thumb      = $p->get_image('thumbnail');
 
     // Condition Attribute
     $condition_terms = wc_get_product_terms($product_id, 'pa_product-condition', ['fields' => 'names']);
-    $condition = !empty($condition_terms) ? implode(', ', $condition_terms) : '—';
+    $condition = !empty($condition_terms) ? implode(', ', $condition_terms) : 'ï¿½';
 
     ob_start(); ?>
 
@@ -627,6 +634,9 @@ function sty_render_vendor_single_card($product_id){
 
 add_action('wp_ajax_sty_get_gallery', 'sty_get_gallery_cb');
 function sty_get_gallery_cb() {
+    if ( empty($_POST['nonce']) || ( ! wp_verify_nonce($_POST['nonce'], 'styliiiish_nonce') && ! wp_verify_nonce($_POST['nonce'], 'ajax_nonce') ) ) {
+        wp_send_json_error(['message' => 'Bad nonce']);
+    }
 
     $pid = intval($_POST['product_id'] ?? 0);
     if (!$pid) wp_send_json_error(['message' => 'Invalid product ID']);
@@ -752,7 +762,7 @@ $(document).on("click", ".sty-gallery-img", function(){
 
     let fullscreen = `
         <div class="sty-fullscreen-view">
-            <div class="sty-fullscreen-close">×</div>
+            <div class="sty-fullscreen-close">ï¿½</div>
             <img src="${src}">
         </div>
     `;

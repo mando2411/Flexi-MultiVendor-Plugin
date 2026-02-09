@@ -316,17 +316,21 @@ add_action('wp_ajax_wf_mark_support_seen','wf_mark_support_seen');
 
 function wf_mark_support_seen(){
 
-  global $wpdb;
+    check_ajax_referer('wf_vendor_orders','nonce');
 
-  $order = intval($_POST['order_id']);
+    if(!is_user_logged_in()) wp_send_json_error('Unauthorized');
 
-  $wpdb->update(
-    $wpdb->prefix.'wf_support_chat',
-    ['seen'=>1],
-    ['order_id'=>$order]
-  );
+    global $wpdb;
 
-  wp_send_json_success();
+    $order = intval($_POST['order_id']);
+
+    $wpdb->update(
+        $wpdb->prefix.'wf_support_chat',
+        ['seen'=>1],
+        ['order_id'=>$order]
+    );
+
+    wp_send_json_success();
 
 }
 
@@ -1170,6 +1174,7 @@ function wf_status_buttons($order, $status, $editable) {
  * 9️⃣ AJAX – تغيير الحالة الحقيقية للأوردر
  * ====================================================== */
 function wf_update_item_status() {
+    check_ajax_referer('wf_vendor_orders','nonce');
 
     if ( ! is_user_logged_in() ) {
         wp_send_json_error('Unauthorized');
@@ -1235,6 +1240,12 @@ function wf_update_item_status() {
 
 
 add_action('wp_ajax_wf_get_action_buttons', function(){
+    check_ajax_referer('wf_vendor_orders','nonce');
+
+    if(!is_user_logged_in()){
+        wp_send_json_error('Unauthorized');
+    }
+
     $order_id = absint($_POST['order_id']);
     $order = wc_get_order($order_id);
     if(!$order) wp_send_json_error('Invalid order');
@@ -1314,6 +1325,8 @@ add_action('wp_ajax_wf_get_order_full_data', 'wf_ajax_get_order_full_data');
 
 function wf_ajax_get_order_full_data() {
 
+    check_ajax_referer('wf_vendor_orders','nonce');
+
     if ( ! is_user_logged_in() ) {
         wp_send_json_error('Unauthorized');
     }
@@ -1383,6 +1396,7 @@ add_action('woocommerce_order_status_changed', function ($order_id, $old, $new) 
 add_action('wp_ajax_wf_reload_vendor_orders', 'wf_reload_vendor_orders');
 
 function wf_reload_vendor_orders(){
+    check_ajax_referer('wf_vendor_orders','nonce');
 
     if ( ! is_user_logged_in() ) {
         wp_send_json_error();

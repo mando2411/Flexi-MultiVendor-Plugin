@@ -440,6 +440,11 @@ function websiteflexi_myaccount_welcome_box() {
 
 
 add_action('wp_ajax_styliiiish_update_status', function () {
+    check_ajax_referer('ajax_nonce','nonce');
+
+    if (! current_user_can('manage_woocommerce') ) {
+        wp_send_json_error(['message' => 'No permission']);
+    }
 
     $pid    = intval($_POST['product_id']);
     $status = sanitize_text_field($_POST['status']);
