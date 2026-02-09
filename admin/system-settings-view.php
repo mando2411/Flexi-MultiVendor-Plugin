@@ -91,6 +91,11 @@ if ( ! defined('ABSPATH') ) {
             <?php esc_html_e('License', 'website-flexi'); ?>
         </a>
 
+        <a href="<?php echo esc_url( add_query_arg(array('page' => 'websiteflexi-system-settings', 'tab'  => 'pending_products'), admin_url('plugins.php'))); ?>"
+        class="nav-tab <?php echo ($active_tab === 'pending_products') ? 'nav-tab-active' : ''; ?>">
+            <?php esc_html_e('Pending Products', 'website-flexi'); ?>
+        </a>
+
         
         
         
@@ -207,6 +212,98 @@ if ( ! defined('ABSPATH') ) {
                         });
                     });
                 });
+            })(jQuery);
+        </script>
+
+    <?php endif; ?>
+
+    <?php if ($active_tab === 'pending_products'): ?>
+
+        <?php // Admin review panel for pending vendor products ?>
+        <div style="margin-top:20px;">
+            <div class="wf-card">
+                <h3>📋 Pending Products Review</h3>
+                <p class="wf-desc">Review products submitted by customers. Approve to publish or reject and provide a reason which will be saved and emailed to the vendor.</p>
+
+                <div id="wf-pending-products" style="margin-top:12px;">
+                    <div class="wf-loading">Loading pending products…</div>
+                </div>
+
+            </div>
+        </div>
+
+        <script>
+            (function($){
+                var adminNonce = '<?php echo esc_js( wp_create_nonce('ajax_nonce') ); ?>';
+
+                function loadPendingProducts(){
+                    $('#wf-pending-products').html('<div class="wf-loading">Loading pending products…</div>');
+                    $.post(ajaxurl, {
+                        action: 'sty_filter_vendor_products',
+                        status: 'pending',
+                        nonce: adminNonce
+                    }, function(res){
+                        if (res && res.success) {
+                            $('#wf-pending-products').html(res.html);
+                        } else {
+                            $('#wf-pending-products').html('<div class="wf-error">Failed to load pending products.</div>');
+                        }
+                    }, 'json').fail(function(){
+                        $('#wf-pending-products').html('<div class="wf-error">Server error while loading.</div>');
+                    });
+                }
+
+                // Approve
+                $(document).on('click', '#wf-pending-products .sty-approve', function(e){
+                    e.preventDefault();
+                    var id = $(this).data('id');
+                    if (!id) return;
+                    if (!confirm('Approve this product and publish it?')) return;
+                    $.post(ajaxurl, {
+                        action: 'styliiiish_vendor_moderate',
+                        nonce: adminNonce,
+                        product_id: id,
+                        moderation: 'approve'
+                    }, function(resp){
+                        if (resp && resp.success) {
+                            alert(resp.data.message || 'Approved');
+                            loadPendingProducts();
+                        } else {
+                            alert((resp && resp.data && resp.data.message) ? resp.data.message : 'Error');
+                        }
+                    }, 'json');
+                });
+
+                // Reject with typed reason
+                $(document).on('click', '#wf-pending-products .sty-reject', function(e){
+                    e.preventDefault();
+                    var id = $(this).data('id');
+                    if (!id) return;
+                    var note = prompt('Type rejection reason (will be emailed to vendor):');
+                    if (note === null) return; // cancelled
+                    // send as array keys
+                    var data = {
+                        action: 'styliiiish_vendor_moderate',
+                        nonce: adminNonce,
+                        product_id: id,
+                        moderation: 'reject'
+                    };
+                    data['reason[reason]'] = 'other';
+                    data['reason[note]'] = note;
+
+                    $.post(ajaxurl, data, function(resp){
+                        if (resp && resp.success) {
+                            alert(resp.data.message || 'Rejected');
+                            loadPendingProducts();
+                        } else {
+                            alert((resp && resp.data && resp.data.message) ? resp.data.message : 'Error');
+                        }
+                    }, 'json');
+                });
+
+                // Initial load
+                $(document).ready(function(){ loadPendingProducts(); });
+
             })(jQuery);
         </script>
 
