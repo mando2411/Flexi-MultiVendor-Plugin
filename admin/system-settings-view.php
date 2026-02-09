@@ -194,7 +194,7 @@ if ( ! defined('ABSPATH') ) {
 
                         btn.prop('disabled', true).text('<?php echo esc_js( 'Checking...' ); ?>');
 
-                        $.post(ajaxurl, { action: 'tv_check_license', license: key, domain: '<?php echo esc_js( home_url() ); ?>' }, function(res){
+                        $.post(ajaxurl, { action: 'tv_check_license', license: key, domain: '<?php echo esc_js( home_url() ); ?>', nonce: '<?php echo wp_create_nonce('tv_check_license_nonce'); ?>' }, function(res){
                             if (res && res.status){
                                 $('#wf-license-status .wf-license-badge').html(formatStatusLabel(res.status));
                             } else {

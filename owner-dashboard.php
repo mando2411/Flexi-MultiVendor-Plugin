@@ -797,16 +797,33 @@ function styliiiish_owner_dashboard_shortcode(){
 
         
         add_action('wp_ajax_styliiiish_inline_update_status', function () {
-        
-            $product_id = intval($_POST['product_id']);
-            $status     = sanitize_text_field($_POST['status']);
-        
-            wp_update_post([
-                'ID' => $product_id,
-                'post_status' => $status
-            ]);
-        
-            wp_die("OK");
+                    // Nonce + capability checks
+                    check_ajax_referer('styliiiish_nonce', 'nonce');
+
+                    $product_id = intval($_POST['product_id']);
+                    $status     = sanitize_text_field($_POST['status']);
+
+                    if (! $product_id) {
+                        wp_send_json_error('invalid_product');
+                    }
+
+                    // Allow managers/admins or the product author to update status
+                    $current = wp_get_current_user();
+                    $post = get_post($product_id);
+                    if ( ! $post ) {
+                        wp_send_json_error('invalid_product');
+                    }
+
+                    if ( ! current_user_can('manage_woocommerce') && intval($post->post_author) !== intval($current->ID) && ! current_user_can('manage_options') ) {
+                        wp_send_json_error('unauthorized');
+                    }
+
+                    wp_update_post([
+                        'ID' => $product_id,
+                        'post_status' => $status
+                    ]);
+
+                    wp_send_json_success('ok');
         });
         
         
@@ -816,22 +833,39 @@ function styliiiish_owner_dashboard_shortcode(){
          * AJAX Inline Editing (Price / Stock)
          */
         add_action('wp_ajax_styliiiish_inline_update', function () {
-        
-            $product_id = intval($_POST['product_id']);
-            $field      = sanitize_text_field($_POST['field']);
-            $value      = sanitize_text_field($_POST['value']);
-        
-            if ($field === 'price') {
-                update_post_meta($product_id, '_regular_price', $value);
-                update_post_meta($product_id, '_price', $value);
-            }
-        
-            if ($field === 'stock') {
-                update_post_meta($product_id, '_stock', $value);
-                update_post_meta($product_id, '_manage_stock', 'yes');
-            }
-        
-            wp_die("OK");
+                    // Nonce + capability checks
+                    check_ajax_referer('styliiiish_nonce', 'nonce');
+
+                    $product_id = intval($_POST['product_id']);
+                    $field      = sanitize_text_field($_POST['field']);
+                    $value      = sanitize_text_field($_POST['value']);
+
+                    if (! $product_id) {
+                        wp_send_json_error('invalid_product');
+                    }
+
+                    $current = wp_get_current_user();
+                    $post = get_post($product_id);
+                    if ( ! $post ) {
+                        wp_send_json_error('invalid_product');
+                    }
+
+                    if ( ! current_user_can('manage_woocommerce') && intval($post->post_author) !== intval($current->ID) && ! current_user_can('manage_options') ) {
+                        wp_send_json_error('unauthorized');
+                    }
+
+                    if ($field === 'price') {
+                        update_post_meta($product_id, '_regular_price', $value);
+                        update_post_meta($product_id, '_price', $value);
+                    }
+
+                    if ($field === 'stock') {
+                        update_post_meta($product_id, '_stock', $value);
+                        update_post_meta($product_id, '_manage_stock', 'yes');
+                    }
+
+                    wp_send_json_success('ok');
+                });
         });
 
 
@@ -996,15 +1030,19 @@ function tv_verify_license(){
 }
 
 add_action('wp_ajax_tv_check_license', function () {
+    // Verify nonce and capability
+    check_ajax_referer('tv_check_license_nonce', 'nonce');
 
-   $license = sanitize_text_field($_POST['license']);
-   $domain  = sanitize_text_field($_POST['domain']);
+    if (! current_user_can('manage_options')) {
+         wp_send_json_error(['error' => 'unauthorized']);
+    }
 
-   // هنا ممكن تضيف تحقق من الصلاحيات لو حابب
+    $license = isset($_POST['license']) ? sanitize_text_field($_POST['license']) : '';
+    $domain  = isset($_POST['domain']) ? sanitize_text_field($_POST['domain']) : '';
 
-   $status = tv_remote_license_check($license, $domain);
+    $status = tv_remote_license_check($license, $domain);
 
-   wp_send_json(['status'=>$status]);
+    wp_send_json(['status'=>$status]);
 });
 
 
