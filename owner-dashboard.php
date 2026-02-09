@@ -866,7 +866,6 @@ function styliiiish_owner_dashboard_shortcode(){
 
                     wp_send_json_success('ok');
                 });
-        });
 
 
 
