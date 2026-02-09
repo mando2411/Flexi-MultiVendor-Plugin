@@ -39,6 +39,25 @@ window.loadManageProductsPage = function(page){};
 
  jQuery(function($){
 
+// Ensure `showSection` is available globally. Some themes/plugins inject
+// owner-dashboard HTML via innerHTML or AJAX which won't execute inline
+// <script> tags — exposing this helper on `window` prevents
+// "showSection is not defined" errors when cards use `onclick="showSection(...)"`.
+window.showSection = window.showSection || function(section) {
+    try {
+        var secs = document.querySelectorAll('.owner-section');
+        if (secs && secs.length) {
+            secs.forEach(function(s){ s.style.display = 'none'; });
+        }
+        var el = document.getElementById('section-' + section);
+        if (el) el.style.display = 'block';
+        if (window.scrollTo) window.scrollTo({ top: 300, behavior: 'smooth' });
+    } catch(e) {
+        console.warn('showSection failed', e);
+    }
+};
+
+
 
 
 
