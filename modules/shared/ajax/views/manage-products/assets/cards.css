@@ -200,6 +200,12 @@ html[dir="ltr"] .sty-cards-grid{ direction: ltr; }
   color: var(--sty-main);
 }
 
+/* Sale price + discount styles */
+.card-price-wrap{ display:flex; align-items:center; gap:8px; }
+.card-price-sale{ font-weight:800; color: var(--sty-main); font-size:15px; }
+.card-price-regular{ color: var(--sty-muted); text-decoration: line-through; font-size:13px; }
+.card-discount-badge{ background:#e63946; color:#fff; padding:4px 6px; border-radius:8px; font-size:12px; font-weight:700; }
+
 .card-cat{
   font-size: 12px;
   color: var(--sty-muted);

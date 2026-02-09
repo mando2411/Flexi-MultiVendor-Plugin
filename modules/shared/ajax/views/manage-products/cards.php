@@ -24,6 +24,13 @@ echo '<link rel="stylesheet" href="' . esc_url( plugins_url( 'assets/cards.css',
 <?php
 $id     = $p->get_id();
 $price  = $p->get_regular_price();
+$sale   = $p->get_sale_price();
+
+// compute discount percent when applicable
+$discount_percent = '';
+if($sale && $price && floatval($sale) < floatval($price)){
+    $discount_percent = round(100 - (floatval($sale) / floatval($price) * 100));
+}
 $img    = $p->get_image('medium');
 $status = $p->get_status();
 
@@ -87,8 +94,28 @@ $created_ts = get_post_time('U', true, $id);
 
         <div class="card-meta">
 
-            <span class="card-price">
-                <?= $price ? esc_html($price) . ' ' . esc_html__( 'EGP', 'website-flexi' ) : esc_html__( '—', 'website-flexi' ) ?>
+            <span class="card-price-wrap">
+            <?php if($sale && $price && floatval($sale) < floatval($price)): ?>
+
+                <span class="card-price card-price-sale">
+                    <?= esc_html( $sale ) . ' ' . esc_html__( 'EGP', 'website-flexi' ) ?>
+                </span>
+
+                <span class="card-price card-price-regular">
+                    <?= esc_html( $price ) . ' ' . esc_html__( 'EGP', 'website-flexi' ) ?>
+                </span>
+
+                <span class="card-discount-badge">
+                    -<?= esc_html( $discount_percent ) ?>%
+                </span>
+
+            <?php else: ?>
+
+                <span class="card-price">
+                    <?= $price ? esc_html($price) . ' ' . esc_html__( 'EGP', 'website-flexi' ) : esc_html__( '—', 'website-flexi' ) ?>
+                </span>
+
+            <?php endif; ?>
             </span>
 
             <?php if(!empty($terms)): ?>
