@@ -86,6 +86,11 @@ if ( ! defined('ABSPATH') ) {
             <?php esc_html_e('Reports', 'website-flexi'); ?>
         </a>
 
+        <a href="<?php echo esc_url( add_query_arg(array('page' => 'websiteflexi-system-settings', 'tab'  => 'license'), admin_url('plugins.php'))); ?>"
+        class="nav-tab <?php echo ($active_tab === 'license') ? 'nav-tab-active' : ''; ?>">
+            <?php esc_html_e('License', 'website-flexi'); ?>
+        </a>
+
         
         
         
@@ -109,6 +114,103 @@ if ( ! defined('ABSPATH') ) {
 
 
 
+
+    <?php if ($active_tab === 'license'): ?>
+
+        <?php
+        // Handle license save from this settings page
+        if ( isset($_POST['tv_save_license_from_settings']) ) {
+            check_admin_referer('tv_license_nonce');
+
+            update_option('tv_license_key', sanitize_text_field($_POST['tv_license']));
+
+            // Force recheck
+            delete_transient('tv_license_status');
+            delete_transient('tv_license_checked');
+
+            // Run verify (uses remote check and sets transient)
+            if ( function_exists('tv_verify_license') ) {
+                tv_verify_license();
+            }
+
+            echo '<div class="notice notice-success is-dismissible" style="margin-top:15px;"><p>' . esc_html__('License saved and verification requested.', 'website-flexi') . '</p></div>';
+        }
+
+        $wf_license_key = get_option('tv_license_key', '');
+        $wf_license_status = get_transient('tv_license_status');
+        $wf_license_checked = get_transient('tv_license_checked') ? true : false;
+        ?>
+
+        <div style="margin-top:20px;">
+            <div class="wf-card wf-license-card">
+                <h3>🔐 TaajVendor License</h3>
+
+                <p class="wf-desc"><?php esc_html_e('Enter your license key to activate plugin updates and support.', 'website-flexi'); ?></p>
+
+                <form method="post" id="wf-license-form">
+                    <?php wp_nonce_field('tv_license_nonce'); ?>
+
+                    <div class="wf-field" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <input type="text" name="tv_license" value="<?php echo esc_attr($wf_license_key); ?>" style="width:420px;padding:8px;border:1px solid #ddd;border-radius:4px;">
+
+                        <button class="button button-primary" name="tv_save_license_from_settings" style="height:38px;padding:0 14px;"><?php esc_html_e('Save & Activate', 'website-flexi'); ?></button>
+
+                        <button type="button" id="wf-check-license-btn" class="button" style="height:38px;padding:0 14px;"><?php esc_html_e('Check Now', 'website-flexi'); ?></button>
+                    </div>
+                </form>
+
+                <div id="wf-license-status" style="margin-top:14px;">
+                    <strong><?php esc_html_e('Status:', 'website-flexi'); ?></strong>
+                    <span class="wf-license-badge"><?php echo tv_format_license_status($wf_license_status); ?></span>
+                    <?php if ( $wf_license_checked ): ?>
+                        <span style="margin-left:10px;color:#666;"><?php esc_html_e('Checked recently', 'website-flexi'); ?></span>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .wf-license-card { max-width:920px; }
+            .wf-license-badge span, .wf-license-badge { font-weight:600; }
+            .wf-license-card .wf-desc { margin-bottom:10px; }
+        </style>
+
+        <script>
+            (function($){
+                function formatStatusLabel(s){
+                    switch(s){
+                        case 'valid': return '<span style="color:green">Active</span>';
+                        case 'expired': return '<span style="color:orange">Expired</span>';
+                        case 'inactive': return '<span style="color:red">Inactive</span>';
+                        case 'invalid_domain': return '<span style="color:red">Used on another site</span>';
+                        default: return '<span style="color:red">Invalid</span>';
+                    }
+                }
+
+                $(document).ready(function(){
+                    $('#wf-check-license-btn').on('click', function(){
+                        var btn = $(this);
+                        var key = $('input[name="tv_license"]').val();
+
+                        btn.prop('disabled', true).text('<?php echo esc_js( 'Checking...' ); ?>');
+
+                        $.post(ajaxurl, { action: 'tv_check_license', license: key, domain: '<?php echo esc_js( home_url() ); ?>' }, function(res){
+                            if (res && res.status){
+                                $('#wf-license-status .wf-license-badge').html(formatStatusLabel(res.status));
+                            } else {
+                                $('#wf-license-status .wf-license-badge').html('<span style="color:red">Error</span>');
+                            }
+                            btn.prop('disabled', false).text('<?php echo esc_js( 'Check Now' ); ?>');
+                        }, 'json').fail(function(){
+                            $('#wf-license-status .wf-license-badge').html('<span style="color:red">Error</span>');
+                            btn.prop('disabled', false).text('<?php echo esc_js( 'Check Now' ); ?>');
+                        });
+                    });
+                });
+            })(jQuery);
+        </script>
+
+    <?php endif; ?>
 
     <?php if ($active_tab === 'marketplace'): ?>
 
