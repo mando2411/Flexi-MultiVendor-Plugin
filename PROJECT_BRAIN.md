@@ -194,3 +194,4 @@ If you want, I can convert the remediation priorities into concrete PR-style cha
 ## Brain Version
 - v1.0 — Initial architecture mapping (2026-02-05)
 - v1.1 — Added wallet flow (…)
+a
