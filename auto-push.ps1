@@ -1,3 +1,5 @@
+Set-Location $PSScriptRoot
+
 git status
 
 $changes = git status --porcelain
