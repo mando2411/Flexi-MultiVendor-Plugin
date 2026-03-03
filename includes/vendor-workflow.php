@@ -292,6 +292,29 @@ add_action( 'woocommerce_account_register-vendor_endpoint', function () {
         echo '<p>' . __( 'You cannot apply again.', 'website-flexi' ) . '</p>';
         return;
     }
+
+    $kyc_enabled = get_option( 'wf_enable_kyc', 'yes' ) === 'yes';
+
+    if ( ! $kyc_enabled ) {
+        ?>
+        <h2 class="taj-page-title"><?php _e( 'Become a Vendor', 'website-flexi' ); ?></h2>
+        <p class="taj-page-subtitle"><?php _e( 'KYC verification is currently disabled. You can activate your vendor account directly.', 'website-flexi' ); ?></p>
+
+        <div class="taj-card">
+            <form method="post" action="<?php echo esc_url( wc_get_account_endpoint_url( 'register-vendor' ) ); ?>" class="taj-vendor-form">
+                <?php wp_nonce_field( 'taj_vendor_quick_apply', 'taj_vendor_quick_apply_nonce' ); ?>
+                <input type="hidden" name="taj_vendor_quick_apply" value="1">
+
+                <div class="taj-actions">
+                    <button type="submit" class="button button-primary taj-submit">
+                        <?php _e( 'Activate Vendor Account', 'website-flexi' ); ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <?php
+        return;
+    }
     ?>
 
 <h2 class="taj-page-title"><?php _e( 'Register as a Vendor', 'website-flexi' ); ?></h2>
@@ -562,6 +585,40 @@ add_action( 'woocommerce_account_register-vendor_endpoint', function () {
 
 add_action( 'wp_loaded', 'taj_handle_vendor_application' );
 function taj_handle_vendor_application() {
+
+    if ( $_SERVER['REQUEST_METHOD'] === 'POST' && ! empty( $_POST['taj_vendor_quick_apply'] ) ) {
+
+        if (
+            ! isset( $_POST['taj_vendor_quick_apply_nonce'] ) ||
+            ! wp_verify_nonce( $_POST['taj_vendor_quick_apply_nonce'], 'taj_vendor_quick_apply' )
+        ) {
+            return;
+        }
+
+        if ( ! is_user_logged_in() ) {
+            return;
+        }
+
+        $kyc_enabled = get_option( 'wf_enable_kyc', 'yes' ) === 'yes';
+        if ( $kyc_enabled ) {
+            return;
+        }
+
+        $user_id = get_current_user_id();
+        $user    = wp_get_current_user();
+
+        if ( array_intersect( [ 'taj_vendor', 'taj_vendor_pending', 'taj_vendor_suspended' ], (array) $user->roles ) ) {
+            wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
+            exit;
+        }
+
+        ( new WP_User( $user_id ) )->set_role( 'taj_vendor' );
+        update_user_meta( $user_id, 'taj_kyc_status', 'approved' );
+        update_user_meta( $user_id, 'taj_vendor_approved_at', current_time( 'mysql' ) );
+
+        wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
+        exit;
+    }
 
     if ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) return;
     if ( empty( $_POST['taj_vendor_apply'] ) ) return;

@@ -245,6 +245,24 @@ function websiteflexi_render_system_settings_page() {
         ), admin_url('plugins.php')) );
         exit;
     }
+
+    // =========================
+    // معالجة الفورم: KYC Settings
+    // =========================
+    if ( isset($_POST['wf_save_kyc_settings']) && check_admin_referer('wf_save_kyc_settings') ) {
+
+        update_option(
+            'wf_enable_kyc',
+            isset($_POST['wf_enable_kyc']) ? 'yes' : 'no'
+        );
+
+        wp_redirect( add_query_arg([
+            'page'   => 'websiteflexi-system-settings',
+            'wf_msg' => 'kyc_saved',
+            'tab'    => 'kyc',
+        ], admin_url('plugins.php')) );
+        exit;
+    }
     
     // =========================
     // Products Layout

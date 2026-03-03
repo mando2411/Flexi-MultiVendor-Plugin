@@ -44,6 +44,9 @@ if ( ! defined('ABSPATH') ) {
                     case 'dashboard_user_removed':
                         echo esc_html__('Dashboard user removed successfully.', 'website-flexi');
                         break;
+                    case 'kyc_saved':
+                        echo esc_html__('KYC settings saved successfully.', 'website-flexi');
+                        break;
                     default:
                         echo esc_html__('Settings saved.', 'website-flexi');
                         break;
@@ -96,7 +99,13 @@ if ( ! defined('ABSPATH') ) {
             <?php esc_html_e('Pending Products', 'website-flexi'); ?>
         </a>
 
-        
+        <a href="<?php echo esc_url( add_query_arg(array('page' => 'websiteflexi-system-settings', 'tab'  => 'kyc'), admin_url('plugins.php'))); ?>"
+        class="nav-tab <?php echo ($active_tab === 'kyc') ? 'nav-tab-active' : ''; ?>">
+            <?php esc_html_e('KYC', 'website-flexi'); ?>
+        </a>
+
+        <!-- Future tabs here -->
+         
         
         
     </h2>
@@ -118,6 +127,40 @@ if ( ! defined('ABSPATH') ) {
 
 
 
+
+
+    <?php if ($active_tab === 'kyc'): ?>
+
+        <?php $kyc_enabled = get_option('wf_enable_kyc', 'yes') === 'yes'; ?>
+
+        <form method="post" style="margin-top:20px;max-width:920px;">
+            <?php wp_nonce_field('wf_save_kyc_settings'); ?>
+
+            <div class="wf-card">
+                <h3>🪪 KYC Verification</h3>
+
+                <label class="wf-toggle">
+                    <input type="checkbox"
+                           name="wf_enable_kyc"
+                           value="yes"
+                           <?php checked($kyc_enabled); ?>>
+                    <span></span>
+                    <?php esc_html_e('Enable vendor KYC verification before approval', 'website-flexi'); ?>
+                </label>
+
+                <p class="wf-desc">
+                    <?php esc_html_e('When disabled, users can become vendors directly without KYC review.', 'website-flexi'); ?>
+                </p>
+            </div>
+
+            <p class="submit">
+                <button type="submit" name="wf_save_kyc_settings" class="button button-primary">
+                    <?php esc_html_e('Save KYC Settings', 'website-flexi'); ?>
+                </button>
+            </p>
+        </form>
+
+    <?php endif; ?>
 
 
     <?php if ($active_tab === 'license'): ?>
